@@ -66,8 +66,12 @@ AGENT_TEMPLATES = [
                 "Follow up and nurture lead",
             ]
         },
-        "default_prompt": "You are a real estate sales assistant...",
-        "is_implemented": False,
+        "default_prompt": (
+            "You are a real estate sales assistant for {business_name}. "
+            "Qualify buyers by property type, location, budget, and timeline. "
+            "Schedule viewings but hand off final pricing and legal paperwork to staff."
+        ),
+        "is_implemented": True,
     },
     {
         "name": "Clinic Receptionist + Patient Follow-up Agent",
@@ -89,8 +93,12 @@ AGENT_TEMPLATES = [
                 "Post-visit follow-up",
             ]
         },
-        "default_prompt": "You are a clinic receptionist assistant...",
-        "is_implemented": False,
+        "default_prompt": (
+            "You are a clinic receptionist for {business_name}. "
+            "Book appointments, answer service questions from knowledge only. "
+            "Never diagnose or prescribe. Escalate urgent symptoms to staff immediately."
+        ),
+        "is_implemented": True,
     },
     {
         "name": "Home Services / Contractor Bidding Agent",
@@ -112,8 +120,11 @@ AGENT_TEMPLATES = [
                 "Generate follow-up task for estimator",
             ]
         },
-        "default_prompt": "You are a home services quoting assistant...",
-        "is_implemented": False,
+        "default_prompt": (
+            "You are a home services assistant for {business_name}. "
+            "Collect service details, location, urgency, and photos. Hand off final quotes to estimators."
+        ),
+        "is_implemented": True,
     },
     {
         "name": "School / Academy Admin Agent",
@@ -135,8 +146,11 @@ AGENT_TEMPLATES = [
                 "Follow up on application status",
             ]
         },
-        "default_prompt": "You are a school admissions assistant...",
-        "is_implemented": False,
+        "default_prompt": (
+            "You are a school admissions assistant for {business_name}. "
+            "Answer from knowledge about programs, fees, and timetables. Hand off complaints to staff."
+        ),
+        "is_implemented": True,
     },
     {
         "name": "AI Voice Receptionist for SMEs",
@@ -158,8 +172,11 @@ AGENT_TEMPLATES = [
                 "Log call summary to CRM",
             ]
         },
-        "default_prompt": "You are a voice receptionist for {business_name}...",
-        "is_implemented": False,
+        "default_prompt": (
+            "You are a text-mode receptionist for {business_name}. "
+            "Give short professional replies. Collect caller details and arrange callbacks."
+        ),
+        "is_implemented": True,
     },
     {
         "name": "AI Tender / Proposal Writing Agent",
@@ -181,8 +198,11 @@ AGENT_TEMPLATES = [
                 "Hand off for human review and submission",
             ]
         },
-        "default_prompt": "You are a tender proposal writing assistant...",
-        "is_implemented": False,
+        "default_prompt": (
+            "You are a tender/proposal assistant for {business_name}. "
+            "Collect RFP details, deadlines, and documents. Hand off final proposals to staff."
+        ),
+        "is_implemented": True,
     },
     {
         "name": "eCommerce Support + Order Tracking Agent",
@@ -204,8 +224,11 @@ AGENT_TEMPLATES = [
                 "Suggest related products",
             ]
         },
-        "default_prompt": "You are an eCommerce support assistant...",
-        "is_implemented": False,
+        "default_prompt": (
+            "You are an eCommerce support assistant for {business_name}. "
+            "Help with orders, products, and returns per policy. Do not guarantee refunds without policy support."
+        ),
+        "is_implemented": True,
     },
     {
         "name": "AI Recruitment Screening Agent",
@@ -227,8 +250,11 @@ AGENT_TEMPLATES = [
                 "Send rejection or advance notification",
             ]
         },
-        "default_prompt": "You are a recruitment screening assistant...",
-        "is_implemented": False,
+        "default_prompt": (
+            "You are a recruitment screening assistant for {business_name}. "
+            "Ask role-specific screening questions. Hand off interviews and offers to HR."
+        ),
+        "is_implemented": True,
     },
     {
         "name": "AI Finance / Bookkeeping Assistant",
@@ -250,8 +276,11 @@ AGENT_TEMPLATES = [
                 "Hand off complex queries to accountant",
             ]
         },
-        "default_prompt": "You are a finance assistant (not a licensed advisor)...",
-        "is_implemented": False,
+        "default_prompt": (
+            "You are a finance assistant for {business_name} (not a licensed advisor). "
+            "Collect invoice and payment details. Hand off tax and legal questions to professionals."
+        ),
+        "is_implemented": True,
     },
 ]
 

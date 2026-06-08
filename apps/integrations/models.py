@@ -32,6 +32,13 @@ class WebhookEvent(models.Model):
         default=WebhookProcessingStatus.RECEIVED,
     )
     error_message = models.TextField(blank=True, default="")
+    conversation = models.ForeignKey(
+        "inbox.Conversation",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="webhook_events",
+    )
     received_at = models.DateTimeField(auto_now_add=True)
     processed_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

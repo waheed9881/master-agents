@@ -2,6 +2,7 @@
 from dataclasses import dataclass
 
 from apps.agent_engine.services.orchestrator import AgentOrchestrator
+from apps.agent_modules.registry import is_agent_implemented
 from apps.agents.models import AgentInstance
 from apps.inbox.models import ChannelType, SenderType
 from apps.inbox.services import (
@@ -29,8 +30,6 @@ class InboundMessageResult:
 
 class InboundMessageService:
     """Process inbound messages from any channel through a single pipeline."""
-
-    IMPLEMENTED_SLUGS = {"sales-closing-agent"}
 
     @staticmethod
     def process(
@@ -136,7 +135,7 @@ class InboundMessageService:
 
     @staticmethod
     def _run_agent(agent_instance, conversation, message_text):
-        if agent_instance.template.slug not in InboundMessageService.IMPLEMENTED_SLUGS:
+        if not is_agent_implemented(agent_instance.template.slug):
             return None
         return AgentOrchestrator.run(agent_instance, conversation, message_text)
 

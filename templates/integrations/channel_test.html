@@ -1,0 +1,62 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}{{ page_title }} — AI Agent OS{% endblock %}
+
+{% block app_content %}
+<div class="mb-6">
+    <a href="{% url 'integrations:index' %}" class="text-sm text-indigo-600 hover:text-indigo-800">← Back to integrations</a>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="bg-white rounded-xl border border-gray-200 p-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-2">Test {{ account.display_name }}</h2>
+        <p class="text-sm text-gray-500 mb-6">Simulate an inbound {{ account.get_channel_type_display }} message through the full agent pipeline.</p>
+
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            {% for field in form %}
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {% if field.name == "agent_instance_id" %}
+                <select name="agent_instance_id" id="id_agent_instance_id" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                    {% for agent in agents %}
+                    <option value="{{ agent.pk }}" {% if form.agent_instance_id.value == agent.pk %}selected{% endif %}>{{ agent.name }}</option>
+                    {% endfor %}
+                </select>
+                {% else %}
+                {{ field }}
+                {% endif %}
+                {% if field.errors %}<p class="text-xs text-red-600 mt-1">{{ field.errors.0 }}</p>{% endif %}
+            </div>
+            {% endfor %}
+            <button type="submit" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">
+                Send test message
+            </button>
+        </form>
+    </div>
+
+    {% if test_result %}
+    <div class="bg-white rounded-xl border border-gray-200 p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Test Result</h3>
+        {% if test_result.success %}
+        <dl class="space-y-3 text-sm">
+            <div><dt class="text-gray-500">Intent</dt><dd class="font-medium">{{ test_result.intent|default:"—" }}</dd></div>
+            <div><dt class="text-gray-500">AI Reply</dt><dd class="text-gray-800 whitespace-pre-wrap">{{ test_result.ai_reply }}</dd></div>
+            <div><dt class="text-gray-500">Conversation ID</dt><dd><a href="{% url 'inbox:detail' conversation_id=test_result.conversation_id %}" class="text-indigo-600">{{ test_result.conversation_id }}</a></dd></div>
+            {% if test_result.lead_id %}<div><dt class="text-gray-500">Lead ID</dt><dd>{{ test_result.lead_id }}</dd></div>{% endif %}
+            {% if test_result.agent_run_id %}<div><dt class="text-gray-500">Agent Run ID</dt><dd>{{ test_result.agent_run_id }}</dd></div>{% endif %}
+            <div><dt class="text-gray-500">Webhook Event</dt><dd>{{ test_result.webhook_event_id }}</dd></div>
+        </dl>
+        {% else %}
+        <p class="text-red-600 text-sm">{{ test_result.error }}</p>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    #id_message_text, #id_customer_name, #id_customer_phone, #id_customer_username {
+        width: 100%; border: 1px solid #d1d5db; border-radius: 0.5rem; padding: 0.5rem 0.75rem; font-size: 0.875rem;
+    }
+</style>
+{% endblock %}

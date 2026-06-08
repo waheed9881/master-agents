@@ -70,36 +70,52 @@ def seed():
         spec.loader.exec_module(tpl_mod)
         tpl_mod.seed()
 
-    # Deploy Sales Closing Agent for demo tenant
-    from apps.agents.models import AgentInstanceStatus
+    # Ensure all agent templates are up to date
+    import importlib.util
+    from pathlib import Path
 
-    sales_template = AgentTemplate.objects.filter(slug="sales-closing-agent").first()
-    if sales_template and not tenant.agent_instances.filter(template=sales_template).exists():
+    tpl_path = Path(__file__).parent / "seed_agent_templates.py"
+    spec = importlib.util.spec_from_file_location("seed_agent_templates", tpl_path)
+    tpl_mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(tpl_mod)
+    tpl_mod.seed()
+
+    # Deploy all 10 agents for demo tenant
+    from apps.agents.models import AgentInstanceStatus
+    from apps.agents.services import update_agent_settings
+
+    deployed = 0
+    for template in AgentTemplate.objects.filter(is_active=True).order_by("slug"):
+        if tenant.agent_instances.filter(template=template).exists():
+            continue
         instance = create_agent_instance(
             tenant=tenant,
-            template=sales_template,
+            template=template,
             status=AgentInstanceStatus.ACTIVE,
         )
-        print(f"\nDeployed demo agent: {instance.name}")
+        deployed += 1
+        print(f"  Deployed: {instance.name}")
 
-        from apps.agents.services import update_agent_settings
+        if template.slug == "sales-closing-agent":
+            update_agent_settings(
+                instance,
+                business_name="Demo Company",
+                business_description="AI Agent OS helps businesses deploy sales agents on WhatsApp, Instagram, and web chat.",
+                services_json=[
+                    "WhatsApp Sales Agent",
+                    "Instagram DM Automation",
+                    "Web Chat Widget",
+                    "CRM Integration",
+                ],
+                pricing_json={
+                    "Starter": "$299/month — 1 agent, web chat",
+                    "Growth": "$599/month — 3 agents, WhatsApp + Instagram",
+                    "Enterprise": "Custom pricing — unlimited agents + priority support",
+                },
+            )
 
-        update_agent_settings(
-            instance,
-            business_name="Demo Company",
-            business_description="AI Agent OS helps businesses deploy sales agents on WhatsApp, Instagram, and web chat.",
-            services_json=[
-                "WhatsApp Sales Agent",
-                "Instagram DM Automation",
-                "Web Chat Widget",
-                "CRM Integration",
-            ],
-            pricing_json={
-                "Starter": "$299/month — 1 agent, web chat",
-                "Growth": "$599/month — 3 agents, WhatsApp + Instagram",
-                "Enterprise": "Custom pricing — unlimited agents + priority support",
-            },
-        )
+    if deployed:
+        print(f"\nDeployed {deployed} new agent instance(s).")
 
     # Seed CRM demo data
     import importlib.util
@@ -131,6 +147,13 @@ def seed():
     seed_int_mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(seed_int_mod)
     seed_int_mod.seed_integrations_for_tenant(tenant)
+
+    # Seed per-agent knowledge for Phase 11
+    p11_path = Path(__file__).parent / "seed_phase11_knowledge.py"
+    spec = importlib.util.spec_from_file_location("seed_phase11_knowledge", p11_path)
+    seed_p11_mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(seed_p11_mod)
+    seed_p11_mod.seed_phase11_for_tenant(tenant)
 
     print("\nDemo login:")
     print("  Email: admin@example.com")

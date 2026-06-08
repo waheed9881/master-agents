@@ -51,7 +51,7 @@ def seed_integrations_for_tenant(tenant: Tenant):
             tenant=tenant,
             channel_type=item["channel_type"],
             display_name=item["display_name"],
-            defaults={"is_active": True},
+            defaults={"is_active": True, "mock_mode": True},
         )
         if account_created:
             created += 1

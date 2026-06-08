@@ -5,16 +5,11 @@ from dataclasses import dataclass
 from apps.agent_engine.base import AgentRunResult, BaseAgent
 from apps.agent_engine.models import AgentRun, ToolCall, ToolCallStatus
 from apps.agent_engine.providers.factory import get_ai_provider
-from apps.agent_modules.registry import get_module_path
-from apps.agent_modules.sales_agent.agent import SalesClosingAgent
+from apps.agent_modules.registry import load_agent_class
 from apps.agents.models import AgentInstance
 from apps.inbox.models import Conversation
 
 logger = logging.getLogger(__name__)
-
-AGENT_CLASS_MAP: dict[str, type[BaseAgent]] = {
-    "sales-closing-agent": SalesClosingAgent,
-}
 
 
 @dataclass
@@ -29,10 +24,9 @@ class AgentOrchestrator:
     @classmethod
     def resolve_agent(cls, agent_instance: AgentInstance) -> BaseAgent | None:
         slug = agent_instance.template.slug
-        agent_cls = AGENT_CLASS_MAP.get(slug)
+        agent_cls = load_agent_class(slug)
         if not agent_cls:
-            module_path = get_module_path(slug)
-            logger.warning("No agent class for slug=%s module=%s", slug, module_path)
+            logger.warning("No agent class for slug=%s", slug)
             return None
         return agent_cls(agent_instance, provider=get_ai_provider())
 
@@ -47,7 +41,7 @@ class AgentOrchestrator:
         if not agent:
             return None
 
-        if isinstance(agent, SalesClosingAgent):
+        if hasattr(agent, "run_with_handoff"):
             result = agent.run_with_handoff(customer_message, conversation)
         else:
             result = agent.run(customer_message, conversation)

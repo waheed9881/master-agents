@@ -18,6 +18,10 @@ class ChannelAccount(models.Model):
     display_name = models.CharField(max_length=255)
     credentials_encrypted = models.TextField(blank=True, default="")
     is_active = models.BooleanField(default=True)
+    mock_mode = models.BooleanField(
+        default=True,
+        help_text="When enabled, channel uses local mock mode without real Meta API calls.",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

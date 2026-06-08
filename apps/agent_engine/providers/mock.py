@@ -45,12 +45,64 @@ class MockAIProvider(AIProviderAdapter):
                 "I understand you're looking for the best value. Pricing and any available offers "
                 "are handled by our sales team — I'll connect you with someone who can discuss options."
             )
-        elif any(w in text_lower for w in ("legal", "guarantee", "medical", "financial advice")):
+        elif any(w in text_lower for w in ("legal", "guarantee", "medical", "financial advice", "tax advice")):
             intent = "sensitive_topic"
             confidence = 0.94
             reply = (
                 "I'm not able to provide legal, medical, or financial guarantees. "
                 "I'll connect you with a qualified team member who can address your specific questions."
+            )
+        elif any(w in text_lower for w in ("property", "apartment", "villa", "house for sale", "real estate")):
+            intent = "property_inquiry"
+            reply = (
+                "I'd be happy to help with your property search! "
+                "What type of property are you looking for, which area, and what is your budget?"
+            )
+        elif any(w in text_lower for w in ("appointment", "doctor", "clinic", "patient")):
+            intent = "appointment_request"
+            reply = (
+                "I can help schedule an appointment. "
+                "Please share your name, phone number, preferred date/time, and department or service needed."
+            )
+        elif any(w in text_lower for w in ("plumbing", "electrical", "contractor", "renovation", "repair")):
+            intent = "service_request"
+            reply = (
+                "I can help with your service request. "
+                "What type of work do you need, your address, and when would you like someone to visit?"
+            )
+        elif any(w in text_lower for w in ("admission", "school", "academy", "enroll", "tuition")):
+            intent = "admission_inquiry"
+            reply = (
+                "Thank you for your interest! What grade or program are you inquiring about, "
+                "and could you share a parent contact number?"
+            )
+        elif any(w in text_lower for w in ("callback", "reception", "business hours")):
+            intent = "callback_request"
+            reply = (
+                "I can arrange a callback. Please share your name, phone number, and the reason for your call."
+            )
+        elif any(w in text_lower for w in ("rfp", "tender", "proposal", "bid submission")):
+            intent = "proposal_request"
+            reply = (
+                "I can help with your proposal request. "
+                "Please share the RFP document, project type, and submission deadline."
+            )
+        elif any(w in text_lower for w in ("order status", "tracking", "where is my order", "shipment")):
+            intent = "order_status"
+            reply = (
+                "I can help track your order. Please share your order ID and the email or phone on the order."
+            )
+        elif any(w in text_lower for w in ("resume", "cv", "job application", "apply for")):
+            intent = "job_application"
+            reply = (
+                "Thank you for your interest in joining us! "
+                "Which role are you applying for, and could you share your experience and availability?"
+            )
+        elif any(w in text_lower for w in ("invoice", "bookkeeping", "payment due", "expense")):
+            intent = "invoice_question"
+            reply = (
+                "I can help with your invoice or payment question. "
+                "Please share the invoice number, amount, and due date so our team can follow up."
             )
         elif any(w in text_lower for w in ("price", "cost", "pricing", "how much", "quote")):
             intent = "pricing_inquiry"
