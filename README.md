@@ -80,7 +80,7 @@ docs/            # Architecture and runbook docs
 | 4 | ✅ Complete | Inbox, web chat demo, webhook stubs |
 | 5 | ✅ Complete | SalesClosingAgent engine, CRM auto-update |
 | 6 | Complete | Knowledge base UI, APIs, agent search |
-| 7 | Pending | Analytics |
+| 7 | Complete | Analytics dashboard and APIs |
 | 8 | Pending | WhatsApp/Instagram webhooks |
 | 9 | Pending | Tests, docs, seed data |
 
@@ -113,6 +113,12 @@ docs/            # Architecture and runbook docs
 | POST | `/api/agent-engine/test-message/` | Test agent with a message |
 | GET/POST | `/api/knowledge/` | List/create knowledge sources |
 | POST | `/api/knowledge/upload/` | Upload text file as knowledge |
+| GET | `/api/analytics/overview/` | Analytics KPI overview |
+| GET | `/api/analytics/funnel/` | Lead conversion funnel |
+| GET | `/api/analytics/agents/` | Agent performance metrics |
+| GET | `/api/analytics/inbox/` | Inbox analytics |
+| GET | `/api/analytics/knowledge/` | Knowledge analytics |
+| GET | `/api/analytics/recent-activity/` | Recent activity feed |
 
 ## License
 

@@ -19,11 +19,13 @@ urlpatterns = [
     path("crm/", include("apps.crm.urls")),
     path("inbox/", include("apps.inbox.urls")),
     path("knowledge/", include("apps.knowledge.urls")),
+    path("analytics/", include("apps.analytics.urls")),
     path("api/", include("apps.accounts.api_urls")),
     path("api/", include("apps.agents.api_urls")),
     path("api/", include("apps.crm.api_urls")),
     path("api/", include("apps.inbox.api_urls")),
     path("api/", include("apps.knowledge.api_urls")),
+    path("api/", include("apps.analytics.api_urls")),
     path("api/", include("apps.agent_engine.api_urls")),
     path("api/webhooks/", include("apps.integrations.urls")),
 ]

@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "apps.integrations",
     "apps.knowledge",
     "apps.agent_engine",
+    "apps.analytics",
 ]
 
 MIDDLEWARE = [

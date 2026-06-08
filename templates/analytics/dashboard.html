@@ -1,0 +1,313 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}Analytics — AI Agent OS{% endblock %}
+
+{% block app_content %}
+{% with o=dashboard.overview funnel=dashboard.funnel sources=dashboard.lead_sources agents=dashboard.agents inbox=dashboard.inbox engine=dashboard.agent_engine knowledge=dashboard.knowledge activity=dashboard.recent_activity %}
+
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+    <div>
+        <p class="text-gray-500 text-sm">Real-time metrics from CRM, inbox, agent engine, and knowledge base</p>
+    </div>
+    <form method="get" class="flex flex-wrap gap-2">
+        {% for value, label in range_choices %}
+        <button type="submit" name="range" value="{{ value }}"
+                class="rounded-lg px-3 py-1.5 text-sm font-medium transition
+                {% if range_key == value %}bg-indigo-600 text-white{% else %}bg-gray-100 text-gray-600 hover:bg-gray-200{% endif %}">
+            {{ label }}
+        </button>
+        {% endfor %}
+    </form>
+</div>
+
+<!-- KPI cards -->
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 mb-8">
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+        <p class="text-xs text-gray-500">Total Leads</p>
+        <p class="text-2xl font-bold text-gray-900">{{ o.total_leads }}</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+        <p class="text-xs text-gray-500">Hot Leads</p>
+        <p class="text-2xl font-bold text-orange-600">{{ o.hot_leads }}</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+        <p class="text-xs text-gray-500">Qualified</p>
+        <p class="text-2xl font-bold text-blue-600">{{ o.qualified_leads }}</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+        <p class="text-xs text-gray-500">Demo Booked</p>
+        <p class="text-2xl font-bold text-purple-600">{{ o.demo_booked_leads }}</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+        <p class="text-xs text-gray-500">Conversations</p>
+        <p class="text-2xl font-bold text-gray-900">{{ o.total_conversations }}</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+        <p class="text-xs text-gray-500">Agent Runs</p>
+        <p class="text-2xl font-bold text-indigo-600">{{ o.total_agent_runs }}</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+        <p class="text-xs text-gray-500">AI Messages</p>
+        <p class="text-2xl font-bold text-gray-900">{{ o.ai_messages_sent }}</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+        <p class="text-xs text-gray-500">Customer Msgs</p>
+        <p class="text-2xl font-bold text-gray-900">{{ o.customer_messages_received }}</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+        <p class="text-xs text-gray-500">Human Takeovers</p>
+        <p class="text-2xl font-bold text-amber-600">{{ o.human_takeover_count }}</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+        <p class="text-xs text-gray-500">Avg Lead Score</p>
+        <p class="text-2xl font-bold text-gray-900">{{ o.average_lead_score }}</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+        <p class="text-xs text-gray-500">Won / Lost</p>
+        <p class="text-2xl font-bold text-green-600">{{ o.won_leads }}<span class="text-gray-400 text-lg"> / </span><span class="text-red-500">{{ o.lost_leads }}</span></p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+        <p class="text-xs text-gray-500">Knowledge Sources</p>
+        <p class="text-2xl font-bold text-gray-900">{{ o.total_knowledge_sources }}</p>
+    </div>
+</div>
+
+<!-- Funnel + source breakdown -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <div class="bg-white rounded-xl border border-gray-200 p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Conversion Funnel</h3>
+        {% if funnel.total_leads %}
+        <div class="space-y-4">
+            {% for stage in funnel.stages %}
+            {% if stage.count > 0 or stage.status == 'new' %}
+            <div>
+                <div class="flex justify-between text-sm mb-1">
+                    <span class="font-medium text-gray-700">{{ stage.label }}</span>
+                    <span class="text-gray-500">{{ stage.count }} ({{ stage.percentage }}%)</span>
+                </div>
+                {% include "analytics/partials/progress_bar.html" with percentage=stage.percentage %}
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-sm text-gray-500">No leads in this period.</p>
+        {% endif %}
+    </div>
+
+    <div class="bg-white rounded-xl border border-gray-200 p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Lead Source Breakdown</h3>
+        {% if sources.total_leads %}
+        <div class="space-y-4">
+            {% for item in sources.sources %}
+            {% if item.count > 0 %}
+            <div>
+                <div class="flex justify-between text-sm mb-1">
+                    <span class="font-medium text-gray-700">{{ item.label }}</span>
+                    <span class="text-gray-500">{{ item.count }} ({{ item.percentage }}%)</span>
+                </div>
+                {% include "analytics/partials/progress_bar.html" with percentage=item.percentage %}
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-sm text-gray-500">No lead sources in this period.</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Agent performance -->
+<div class="bg-white rounded-xl border border-gray-200 overflow-hidden mb-8">
+    <div class="px-6 py-4 border-b border-gray-100">
+        <h3 class="text-lg font-semibold text-gray-900">Agent Performance</h3>
+    </div>
+    {% if agents.agents %}
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Agent</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Template</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Conversations</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Leads</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hot</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Avg Score</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Runs</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Handoffs</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Knowledge</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                {% for agent in agents.agents %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 font-medium text-gray-900">{{ agent.agent_name }}</td>
+                    <td class="px-6 py-4 text-sm text-gray-600">{{ agent.template_name }}</td>
+                    <td class="px-6 py-4 text-sm text-gray-600">{{ agent.total_conversations }}</td>
+                    <td class="px-6 py-4 text-sm text-gray-600">{{ agent.total_leads }}</td>
+                    <td class="px-6 py-4 text-sm text-orange-600 font-medium">{{ agent.hot_leads }}</td>
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-2">
+                            <div class="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                <div class="h-full bg-indigo-500 rounded-full" style="width: {{ agent.average_lead_score }}%"></div>
+                            </div>
+                            <span class="text-sm text-gray-600">{{ agent.average_lead_score }}</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-600">{{ agent.agent_runs }}</td>
+                    <td class="px-6 py-4 text-sm text-amber-600">{{ agent.human_handoffs }}</td>
+                    <td class="px-6 py-4 text-sm text-gray-600">{{ agent.knowledge_sources }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="p-8 text-center text-sm text-gray-500">No deployed agents yet.</div>
+    {% endif %}
+</div>
+
+<!-- Inbox + Agent engine -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <div class="bg-white rounded-xl border border-gray-200 p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Inbox Analytics</h3>
+        <dl class="grid grid-cols-2 gap-4 text-sm">
+            <div><dt class="text-gray-500">Total conversations</dt><dd class="font-semibold text-gray-900 text-lg">{{ inbox.total_conversations }}</dd></div>
+            <div><dt class="text-gray-500">Open</dt><dd class="font-semibold text-green-600 text-lg">{{ inbox.open_conversations }}</dd></div>
+            <div><dt class="text-gray-500">Closed</dt><dd class="font-semibold text-gray-600 text-lg">{{ inbox.closed_conversations }}</dd></div>
+            <div><dt class="text-gray-500">AI enabled</dt><dd class="font-semibold text-indigo-600 text-lg">{{ inbox.ai_enabled_conversations }}</dd></div>
+            <div><dt class="text-gray-500">Human takeover</dt><dd class="font-semibold text-amber-600 text-lg">{{ inbox.human_takeover_conversations }}</dd></div>
+            <div><dt class="text-gray-500">Total messages</dt><dd class="font-semibold text-gray-900 text-lg">{{ inbox.total_messages }}</dd></div>
+            <div><dt class="text-gray-500">Customer messages</dt><dd class="font-semibold text-gray-900">{{ inbox.customer_messages }}</dd></div>
+            <div><dt class="text-gray-500">AI messages</dt><dd class="font-semibold text-gray-900">{{ inbox.ai_messages }}</dd></div>
+            <div><dt class="text-gray-500">Human messages</dt><dd class="font-semibold text-gray-900">{{ inbox.human_messages }}</dd></div>
+            <div><dt class="text-gray-500">Avg msgs / conversation</dt><dd class="font-semibold text-gray-900">{{ inbox.average_messages_per_conversation }}</dd></div>
+        </dl>
+    </div>
+
+    <div class="bg-white rounded-xl border border-gray-200 p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Agent Engine Analytics</h3>
+        <dl class="grid grid-cols-2 gap-4 text-sm mb-4">
+            <div><dt class="text-gray-500">Total runs</dt><dd class="font-semibold text-gray-900 text-lg">{{ engine.total_runs }}</dd></div>
+            <div><dt class="text-gray-500">Successful</dt><dd class="font-semibold text-green-600 text-lg">{{ engine.successful_runs }}</dd></div>
+            <div><dt class="text-gray-500">Failed</dt><dd class="font-semibold text-red-500 text-lg">{{ engine.failed_runs }}</dd></div>
+            <div><dt class="text-gray-500">Avg confidence</dt><dd class="font-semibold text-gray-900 text-lg">{{ engine.average_confidence }}</dd></div>
+            <div><dt class="text-gray-500">Tokens used</dt><dd class="font-semibold text-gray-900">{{ engine.total_tokens_used }}</dd></div>
+            <div><dt class="text-gray-500">Est. cost</dt><dd class="font-semibold text-gray-900">${{ engine.estimated_cost }}</dd></div>
+        </dl>
+        {% if engine.runs_by_intent %}
+        <h4 class="text-sm font-medium text-gray-700 mb-2">Runs by intent</h4>
+        <div class="flex flex-wrap gap-2 mb-4">
+            {% for intent, count in engine.runs_by_intent.items %}
+            <span class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-700">
+                {{ intent }}: {{ count }}
+            </span>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% if engine.latest_runs %}
+        <h4 class="text-sm font-medium text-gray-700 mb-2">Latest runs</h4>
+        <div class="space-y-2 max-h-48 overflow-y-auto">
+            {% for run in engine.latest_runs %}
+            <div class="text-xs border border-gray-100 rounded-lg p-2 bg-gray-50">
+                <span class="font-medium text-gray-800">{{ run.agent_name }}</span>
+                <span class="text-gray-400"> &middot; {{ run.intent|default:"general" }}</span>
+                <span class="text-gray-400"> &middot; {{ run.created_at|date:"M d, H:i" }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Knowledge + recent activity -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="bg-white rounded-xl border border-gray-200 p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Knowledge Analytics</h3>
+        <dl class="grid grid-cols-2 gap-4 text-sm mb-4">
+            <div><dt class="text-gray-500">Total sources</dt><dd class="font-semibold text-gray-900 text-lg">{{ knowledge.total_knowledge_sources }}</dd></div>
+            <div><dt class="text-gray-500">Active</dt><dd class="font-semibold text-green-600 text-lg">{{ knowledge.active_sources }}</dd></div>
+            <div><dt class="text-gray-500">Archived</dt><dd class="font-semibold text-gray-500 text-lg">{{ knowledge.archived_sources }}</dd></div>
+            <div><dt class="text-gray-500">Total chunks</dt><dd class="font-semibold text-indigo-600 text-lg">{{ knowledge.total_chunks }}</dd></div>
+        </dl>
+        {% if knowledge.sources_by_type %}
+        <h4 class="text-sm font-medium text-gray-700 mb-2">Sources by type</h4>
+        <div class="flex flex-wrap gap-2 mb-4">
+            {% for type, count in knowledge.sources_by_type.items %}
+            <span class="inline-flex items-center rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-medium text-indigo-700">
+                {{ type }}: {{ count }}
+            </span>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% if knowledge.top_agents_by_knowledge %}
+        <h4 class="text-sm font-medium text-gray-700 mb-2">Top agents by knowledge</h4>
+        <ul class="space-y-1 text-sm">
+            {% for row in knowledge.top_agents_by_knowledge %}
+            <li class="flex justify-between text-gray-700">
+                <span>{{ row.agent_name }}</span>
+                <span class="font-medium">{{ row.source_count }} sources</span>
+            </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    </div>
+
+    <div class="bg-white rounded-xl border border-gray-200 p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
+        <div class="space-y-4">
+            {% if activity.leads %}
+            <div>
+                <h4 class="text-xs font-semibold text-gray-500 uppercase mb-2">Leads</h4>
+                <ul class="space-y-1 text-sm">
+                    {% for lead in activity.leads %}
+                    <li class="flex justify-between text-gray-700">
+                        <a href="{% url 'crm:lead_detail' lead.id %}" class="text-indigo-600 hover:underline truncate">{{ lead.title }}</a>
+                        <span class="text-gray-400 text-xs ml-2 shrink-0">{{ lead.created_at|date:"M d" }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            {% if activity.conversations %}
+            <div>
+                <h4 class="text-xs font-semibold text-gray-500 uppercase mb-2">Conversations</h4>
+                <ul class="space-y-1 text-sm">
+                    {% for conv in activity.conversations %}
+                    <li class="flex justify-between text-gray-700">
+                        <a href="{% url 'inbox:detail' conv.id %}" class="text-indigo-600 hover:underline">{{ conv.contact_name }}</a>
+                        <span class="text-gray-400 text-xs">{{ conv.channel_type }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            {% if activity.agent_runs %}
+            <div>
+                <h4 class="text-xs font-semibold text-gray-500 uppercase mb-2">Agent runs</h4>
+                <ul class="space-y-1 text-sm">
+                    {% for run in activity.agent_runs %}
+                    <li class="text-gray-700">{{ run.agent_name|default:"Agent" }} - {{ run.intent|default:"general" }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            {% if activity.tasks %}
+            <div>
+                <h4 class="text-xs font-semibold text-gray-500 uppercase mb-2">Tasks</h4>
+                <ul class="space-y-1 text-sm">
+                    {% for task in activity.tasks %}
+                    <li class="text-gray-700">{{ task.title }} <span class="text-gray-400">({{ task.status }})</span></li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            {% if not activity.leads and not activity.conversations and not activity.agent_runs and not activity.tasks %}
+            <p class="text-sm text-gray-500">No recent activity in this period.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endwith %}
+{% endblock %}
