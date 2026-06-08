@@ -1,0 +1,78 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}{{ source.title }} — Knowledge Base{% endblock %}
+
+{% block app_content %}
+<div class="mb-6">
+    <a href="{% url 'knowledge:list' %}{% if source.agent_instance %}?agent={{ source.agent_instance.pk }}{% endif %}"
+       class="inline-flex items-center gap-1 text-sm text-indigo-600 hover:text-indigo-800">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        Back to knowledge base
+    </a>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-2 space-y-6">
+        <div class="bg-white rounded-xl border border-gray-200 p-6">
+            <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900">{{ source.title }}</h2>
+                    <p class="text-sm text-gray-500 mt-1">
+                        {{ source.get_source_type_display }}
+                        {% if source.agent_instance %} &middot; {{ source.agent_instance.name }}{% endif %}
+                    </p>
+                </div>
+                <span class="inline-flex items-center rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700">
+                    {{ chunks|length }} chunk{{ chunks|length|pluralize }}
+                </span>
+            </div>
+            <div class="prose prose-sm max-w-none">
+                <pre class="whitespace-pre-wrap text-sm text-gray-700 font-sans bg-gray-50 rounded-lg p-4 border border-gray-100">{{ source.content }}</pre>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl border border-gray-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Searchable chunks</h3>
+            {% if chunks %}
+            <div class="space-y-3">
+                {% for chunk in chunks %}
+                <div class="rounded-lg border border-gray-100 bg-gray-50 p-4">
+                    <p class="text-xs text-gray-400 mb-2">Chunk {{ forloop.counter }}</p>
+                    <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ chunk.chunk_text }}</p>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-sm text-gray-500">No chunks generated for this source.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="space-y-6">
+        <div class="bg-white rounded-xl border border-gray-200 p-6">
+            <h3 class="font-semibold text-gray-900 mb-4">Details</h3>
+            <dl class="space-y-3 text-sm">
+                <div>
+                    <dt class="text-gray-500">Created</dt>
+                    <dd class="font-medium text-gray-900">{{ source.created_at|date:"M d, Y H:i" }}</dd>
+                </div>
+                <div>
+                    <dt class="text-gray-500">Last updated</dt>
+                    <dd class="font-medium text-gray-900">{{ source.updated_at|date:"M d, Y H:i" }}</dd>
+                </div>
+                {% if source.agent_instance %}
+                <div>
+                    <dt class="text-gray-500">Linked agent</dt>
+                    <dd>
+                        <a href="{% url 'agents:instance_detail' source.agent_instance.pk %}"
+                           class="font-medium text-indigo-600 hover:text-indigo-800">
+                            {{ source.agent_instance.name }}
+                        </a>
+                    </dd>
+                </div>
+                {% endif %}
+            </dl>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -79,7 +79,7 @@ docs/            # Architecture and runbook docs
 | 3 | ✅ Complete | CRM — contacts, leads, pipeline, tasks |
 | 4 | ✅ Complete | Inbox, web chat demo, webhook stubs |
 | 5 | ✅ Complete | SalesClosingAgent engine, CRM auto-update |
-| 6 | Pending | Knowledge base UI |
+| 6 | Complete | Knowledge base UI, APIs, agent search |
 | 7 | Pending | Analytics |
 | 8 | Pending | WhatsApp/Instagram webhooks |
 | 9 | Pending | Tests, docs, seed data |
@@ -111,6 +111,8 @@ docs/            # Architecture and runbook docs
 | GET/POST | `/api/webhooks/whatsapp/` | WhatsApp webhook (stub) |
 | POST | `/api/webhooks/instagram/` | Instagram webhook (stub) |
 | POST | `/api/agent-engine/test-message/` | Test agent with a message |
+| GET/POST | `/api/knowledge/` | List/create knowledge sources |
+| POST | `/api/knowledge/upload/` | Upload text file as knowledge |
 
 ## License
 

@@ -1,4 +1,4 @@
-"""Knowledge search — agent settings + optional knowledge app (Phase 6)."""
+"""Knowledge search — agent settings + knowledge base chunks."""
 from apps.agents.models import AgentInstance
 
 
@@ -10,8 +10,21 @@ class KnowledgeSearchService:
         results: list[dict] = []
         settings = getattr(agent_instance, "settings", None)
         if not settings:
-            return results
+            settings_results = []
+        else:
+            settings_results = cls._search_agent_settings(settings, query, limit)
+        results.extend(settings_results)
 
+        remaining = limit - len(results)
+        if remaining > 0:
+            chunk_results = cls._search_knowledge_chunks(agent_instance, query, remaining)
+            results.extend(chunk_results)
+
+        return results[:limit]
+
+    @classmethod
+    def _search_agent_settings(cls, settings, query: str, limit: int) -> list[dict]:
+        results: list[dict] = []
         query_lower = query.lower()
 
         if settings.business_description and cls._matches(query_lower, settings.business_description):
@@ -31,26 +44,21 @@ class KnowledgeSearchService:
                 if cls._matches(query_lower, text) or cls._matches(query_lower, key):
                     results.append({"source": "pricing", "text": text})
 
-        # Phase 6: search KnowledgeChunk with pgvector or text fallback
-        try:
-            from apps.knowledge.models import KnowledgeChunk
-
-            chunks = KnowledgeChunk.objects.filter(
-                tenant=agent_instance.tenant,
-                source__agent_instance=agent_instance,
-            )
-            for chunk in chunks[:50]:
-                if cls._matches(query_lower, chunk.chunk_text):
-                    results.append({
-                        "source": f"knowledge_chunk_{chunk.pk}",
-                        "text": chunk.chunk_text,
-                    })
-                    if len(results) >= limit:
-                        break
-        except Exception:
-            pass
-
         return results[:limit]
+
+    @classmethod
+    def _search_knowledge_chunks(
+        cls,
+        agent_instance: AgentInstance,
+        query: str,
+        limit: int,
+    ) -> list[dict]:
+        try:
+            from apps.knowledge.services import search_knowledge_for_agent
+
+            return search_knowledge_for_agent(agent_instance, query, limit=limit)
+        except Exception:
+            return []
 
     @classmethod
     def format_context(cls, results: list[dict]) -> str:

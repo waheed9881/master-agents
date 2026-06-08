@@ -1,0 +1,160 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}Knowledge Base — AI Agent OS{% endblock %}
+
+{% block app_content %}
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+    <div>
+        <p class="text-gray-500 text-sm">Business knowledge your AI agents use to answer customers</p>
+    </div>
+</div>
+
+<!-- Stats -->
+<div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+        <p class="text-xs text-gray-500">Sources</p>
+        <p class="text-2xl font-bold text-gray-900">{{ stats.total_sources }}</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+        <p class="text-xs text-gray-500">Searchable chunks</p>
+        <p class="text-2xl font-bold text-indigo-600">{{ stats.total_chunks }}</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-4 col-span-2 sm:col-span-1">
+        <p class="text-xs text-gray-500">Agent filter</p>
+        <p class="text-sm font-medium text-gray-900 mt-1">
+            {% if selected_agent %}{{ selected_agent.name }}{% else %}All agents{% endif %}
+        </p>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Sources list -->
+    <div class="lg:col-span-2 space-y-4">
+        <!-- Agent filter -->
+        <div class="bg-white rounded-xl border border-gray-200 p-4">
+            <form method="get" class="flex flex-wrap gap-2">
+                <a href="{% url 'knowledge:list' %}"
+                   class="rounded-lg px-3 py-1.5 text-sm font-medium transition
+                   {% if not agent_filter %}bg-indigo-600 text-white{% else %}bg-gray-100 text-gray-600 hover:bg-gray-200{% endif %}">
+                    All agents
+                </a>
+                {% for agent in agents %}
+                <button type="submit" name="agent" value="{{ agent.pk }}"
+                        class="rounded-lg px-3 py-1.5 text-sm font-medium transition
+                        {% if agent_filter == agent.pk|stringformat:'s' %}bg-indigo-600 text-white{% else %}bg-gray-100 text-gray-600 hover:bg-gray-200{% endif %}">
+                    {{ agent.name }}
+                </button>
+                {% endfor %}
+            </form>
+        </div>
+
+        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            {% if sources %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Agent</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Chunks</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Updated</th>
+                            <th class="px-6 py-3"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        {% for source in sources %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4">
+                                <p class="font-medium text-gray-900">{{ source.title }}</p>
+                                <p class="text-xs text-gray-500 truncate max-w-xs">{{ source.content|truncatechars:80 }}</p>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-700">
+                                    {{ source.get_source_type_display }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-600">
+                                {% if source.agent_instance %}{{ source.agent_instance.name }}{% else %}<span class="text-gray-400">All</span>{% endif %}
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-600">{{ source.chunk_count }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-500">{{ source.updated_at|date:"M d, Y" }}</td>
+                            <td class="px-6 py-4 text-right">
+                                <a href="{% url 'knowledge:source_detail' source.pk %}"
+                                   class="text-sm text-indigo-600 hover:text-indigo-800 font-medium">View</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="p-12 text-center">
+                <div class="w-12 h-12 rounded-full bg-indigo-50 flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                    </svg>
+                </div>
+                <p class="text-gray-900 font-medium mb-1">No knowledge sources yet</p>
+                <p class="text-sm text-gray-500">Add FAQs, pricing, and policies so agents answer accurately.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Add source form -->
+    <div>
+        <div class="bg-white rounded-xl border border-gray-200 p-6 sticky top-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Add knowledge</h3>
+            {% if messages %}
+            {% for message in messages %}
+            <div class="mb-4 rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-800">
+                {{ message }}
+            </div>
+            {% endfor %}
+            {% endif %}
+            <form method="post" class="space-y-4">
+                {% csrf_token %}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                    <input type="text" name="title" required
+                           class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                           placeholder="e.g. Pricing FAQ">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                    <select name="source_type"
+                            class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500">
+                        {% for value, label in source_types %}
+                        <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Agent (optional)</label>
+                    <select name="agent_instance_id"
+                            class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500">
+                        <option value="">All agents</option>
+                        {% for agent in agents %}
+                        <option value="{{ agent.pk }}"
+                                {% if selected_agent and selected_agent.pk == agent.pk %}selected{% endif %}>
+                            {{ agent.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Content</label>
+                    <textarea name="content" rows="8" required
+                              class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                              placeholder="Paste FAQ answers, pricing details, or policies..."></textarea>
+                </div>
+                <button type="submit"
+                        class="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 transition">
+                    Save knowledge
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

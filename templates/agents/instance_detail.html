@@ -77,9 +77,8 @@
                 <a href="{% url 'inbox:webchat_demo' %}" class="block w-full text-center rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
                     Test web chat
                 </a>
-                <a href="#" class="block w-full text-center rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                <a href="{% url 'knowledge:list' %}?agent={{ instance.pk }}" class="block w-full text-center rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
                     Knowledge base
-                    <span class="block text-xs text-gray-400 mt-0.5">Phase 6</span>
                 </a>
             </div>
         </div>
@@ -94,7 +93,7 @@
                     <span class="text-gray-400">○</span> Business settings
                 </li>
                 <li class="flex items-center gap-2">
-                    <span class="text-gray-400">○</span> Knowledge base
+                    <span class="text-green-600">&#10003;</span> Knowledge base
                 </li>
                 <li class="flex items-center gap-2">
                     <span class="text-gray-400">○</span> Connect channels

@@ -118,6 +118,13 @@ def seed():
     spec.loader.exec_module(seed_inbox_mod)
     seed_inbox_mod.seed_inbox_for_tenant(tenant, agent_instance=tenant.agent_instances.first())
 
+    # Seed knowledge base demo data
+    kb_path = Path(__file__).parent / "seed_knowledge_demo.py"
+    spec = importlib.util.spec_from_file_location("seed_knowledge_demo", kb_path)
+    seed_kb_mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(seed_kb_mod)
+    seed_kb_mod.seed_knowledge_for_tenant(tenant, agent_instance=tenant.agent_instances.first())
+
     print("\nDemo login:")
     print("  Email: admin@example.com")
     print("  Password: Admin123!")

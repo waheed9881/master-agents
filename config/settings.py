@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     "apps.crm",
     "apps.inbox",
     "apps.integrations",
+    "apps.knowledge",
     "apps.agent_engine",
 ]
 
