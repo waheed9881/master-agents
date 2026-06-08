@@ -1,0 +1,85 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}Dashboard — AI Agent OS{% endblock %}
+
+{% block app_content %}
+<!-- Welcome banner -->
+<div class="rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 p-6 mb-8 text-white">
+    <h2 class="text-2xl font-bold mb-1">Welcome, {{ request.user.full_name }}!</h2>
+    <p class="text-indigo-100">
+        {% if current_tenant %}
+        Managing <strong>{{ current_tenant.name }}</strong> workspace
+        {% else %}
+        Set up your workspace to get started
+        {% endif %}
+    </p>
+</div>
+
+<!-- Stats cards -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div class="bg-white rounded-xl border border-gray-200 p-5">
+        <p class="text-sm text-gray-500 mb-1">Total Leads</p>
+        <p class="text-3xl font-bold text-gray-900">{{ stats.total_leads }}</p>
+        <a href="{% url 'crm:leads' %}" class="text-xs text-indigo-600 hover:underline mt-1 inline-block">View CRM →</a>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-5">
+        <p class="text-sm text-gray-500 mb-1">Hot Leads</p>
+        <p class="text-3xl font-bold text-orange-600">{{ stats.hot_leads }}</p>
+        <a href="{% url 'crm:leads' %}?status=hot" class="text-xs text-indigo-600 hover:underline mt-1 inline-block">View hot →</a>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-5">
+        <p class="text-sm text-gray-500 mb-1">AI Agents</p>
+        <p class="text-3xl font-bold text-indigo-600">{{ stats.agent_count }}</p>
+        <a href="{% url 'agents:gallery' %}" class="text-xs text-indigo-600 hover:underline mt-1 inline-block">View agents →</a>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-5">
+        <p class="text-sm text-gray-500 mb-1">Conversations</p>
+        <p class="text-3xl font-bold text-gray-900">{{ stats.conversations }}</p>
+        <a href="{% url 'inbox:list' %}" class="text-xs text-indigo-600 hover:underline mt-1 inline-block">Open inbox →</a>
+    </div>
+</div>
+
+<!-- Quick start -->
+<div class="bg-white rounded-xl border border-gray-200 p-6">
+    <h3 class="text-lg font-semibold text-gray-900 mb-4">Getting Started</h3>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="rounded-lg border border-dashed border-green-300 bg-green-50/50 p-4 text-center">
+            <div class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center mx-auto mb-3 text-sm font-bold">✓</div>
+            <p class="font-medium text-gray-900">Phase 1: Auth & Dashboard</p>
+            <p class="text-sm text-gray-500 mt-1">Complete</p>
+        </div>
+        <div class="rounded-lg border border-dashed border-green-300 bg-green-50/50 p-4 text-center">
+            <div class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center mx-auto mb-3 text-sm font-bold">✓</div>
+            <p class="font-medium text-gray-900">Phase 2: Agent Templates</p>
+            <p class="text-sm text-gray-500 mt-1">10 agent cards ready</p>
+        </div>
+        <div class="rounded-lg border border-dashed border-green-300 bg-green-50/50 p-4 text-center">
+            <div class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center mx-auto mb-3 text-sm font-bold">✓</div>
+            <p class="font-medium text-gray-900">Phase 3: CRM</p>
+            <p class="text-sm text-gray-500 mt-1">Leads, pipeline, tasks</p>
+        </div>
+        <div class="rounded-lg border border-dashed border-green-300 bg-green-50/50 p-4 text-center">
+            <div class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center mx-auto mb-3 text-sm font-bold">✓</div>
+            <p class="font-medium text-gray-900">Phase 4: Inbox & Web Chat</p>
+            <p class="text-sm text-gray-500 mt-1">Unified messaging ready</p>
+        </div>
+        <div class="rounded-lg border border-dashed border-green-300 bg-green-50/50 p-4 text-center">
+            <div class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center mx-auto mb-3 text-sm font-bold">✓</div>
+            <p class="font-medium text-gray-900">Phase 5: Sales Agent Engine</p>
+            <p class="text-sm text-gray-500 mt-1">AI + CRM auto-update</p>
+        </div>
+        <div class="rounded-lg border border-dashed border-indigo-300 bg-indigo-50/50 p-4 text-center">
+            <div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center mx-auto mb-3 text-sm font-bold">6</div>
+            <p class="font-medium text-gray-900">Phase 6: Knowledge Base</p>
+            <p class="text-sm text-gray-500 mt-1">Next up</p>
+        </div>
+    </div>
+    <div class="mt-6 text-center">
+        <a href="{% url 'agents:gallery' %}"
+           class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-white font-semibold hover:bg-indigo-700 transition">
+            Browse AI Agents
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}Pipeline — CRM{% endblock %}
+
+{% block app_content %}
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+    <p class="text-gray-500 text-sm">Deals organized by pipeline stage</p>
+    <a href="{% url 'crm:leads' %}"
+       class="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+        View all leads
+    </a>
+</div>
+
+<!-- Summary -->
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+        <p class="text-xs text-gray-500">Total leads</p>
+        <p class="text-2xl font-bold">{{ stats.total_leads }}</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+        <p class="text-xs text-gray-500">Hot</p>
+        <p class="text-2xl font-bold text-orange-600">{{ stats.hot_leads }}</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+        <p class="text-xs text-gray-500">Won</p>
+        <p class="text-2xl font-bold text-green-600">{{ stats.won_leads }}</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+        <p class="text-xs text-gray-500">Open tasks</p>
+        <p class="text-2xl font-bold text-indigo-600">{{ stats.open_tasks }}</p>
+    </div>
+</div>
+
+<!-- Kanban board -->
+<div class="overflow-x-auto pb-4">
+    <div class="flex gap-4 min-w-max">
+        {% for column in board %}
+        <div class="w-72 shrink-0">
+            <div class="flex items-center justify-between mb-3 px-1">
+                <h3 class="font-semibold text-gray-900 text-sm">{{ column.stage.name }}</h3>
+                <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{{ column.deals|length }}</span>
+            </div>
+            <div class="space-y-3 min-h-[200px] bg-gray-50 rounded-xl p-3 border border-gray-200">
+                {% for deal in column.deals %}
+                <div class="bg-white rounded-lg border border-gray-200 p-4 shadow-sm hover:shadow transition">
+                    <p class="font-medium text-gray-900 text-sm mb-1">{{ deal.lead.title }}</p>
+                    <p class="text-xs text-gray-500 mb-2">{{ deal.lead.contact.name }}</p>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm font-semibold text-indigo-600">{{ deal.value }} {{ deal.currency }}</span>
+                        <span class="text-xs text-gray-400">{{ deal.probability }}%</span>
+                    </div>
+                    <a href="{% url 'crm:lead_detail' lead_id=deal.lead.pk %}"
+                       class="block mt-2 text-xs text-indigo-600 hover:underline">View lead →</a>
+                </div>
+                {% empty %}
+                <p class="text-xs text-gray-400 text-center py-8">No deals</p>
+                {% endfor %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="text-center py-16 w-full">
+            <p class="text-gray-500">No pipeline stages configured.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

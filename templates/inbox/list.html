@@ -1,0 +1,73 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}Inbox — AI Agent OS{% endblock %}
+
+{% block app_content %}
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+    <p class="text-gray-500 text-sm">Unified inbox across web chat, WhatsApp, and Instagram</p>
+    <a href="{% url 'inbox:webchat_demo' %}"
+       class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">
+        Open web chat demo
+    </a>
+</div>
+
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+        <p class="text-xs text-gray-500">Conversations</p>
+        <p class="text-2xl font-bold">{{ stats.total_conversations }}</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+        <p class="text-xs text-gray-500">Open</p>
+        <p class="text-2xl font-bold text-green-600">{{ stats.open_conversations }}</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+        <p class="text-xs text-gray-500">AI messages</p>
+        <p class="text-2xl font-bold text-indigo-600">{{ stats.ai_messages_sent }}</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+        <p class="text-xs text-gray-500">Human takeover</p>
+        <p class="text-2xl font-bold text-orange-600">{{ stats.human_takeover_count }}</p>
+    </div>
+</div>
+
+<div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+    {% if conversations %}
+    <div class="divide-y divide-gray-200">
+        {% for conv in conversations %}
+        <a href="{% url 'inbox:detail' conversation_id=conv.pk %}"
+           class="flex items-center gap-4 px-6 py-4 hover:bg-gray-50 transition">
+            <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-semibold shrink-0">
+                {{ conv.contact.name|slice:":1"|upper }}
+            </div>
+            <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2">
+                    <p class="font-medium text-gray-900 truncate">{{ conv.contact.name }}</p>
+                    {% if conv.human_takeover %}
+                    <span class="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">Human</span>
+                    {% elif conv.ai_enabled %}
+                    <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">AI</span>
+                    {% endif %}
+                </div>
+                <p class="text-sm text-gray-500 truncate">
+                    {% with last=conv.messages.last %}
+                    {% if last %}{{ last.message_text|truncatechars:80 }}{% else %}No messages{% endif %}
+                    {% endwith %}
+                </p>
+            </div>
+            <div class="text-right shrink-0">
+                <span class="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">
+                    {{ conv.get_channel_type_display }}
+                </span>
+                <p class="text-xs text-gray-400 mt-1">{{ conv.last_message_at|timesince }} ago</p>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-16 px-6">
+        <p class="text-gray-500 mb-4">No conversations yet.</p>
+        <a href="{% url 'inbox:webchat_demo' %}" class="text-indigo-600 hover:underline text-sm">Try the web chat demo →</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,98 @@
+<div class="bg-white rounded-xl border border-gray-200 overflow-hidden flex flex-col h-full hover:shadow-lg transition-shadow duration-200">
+    <!-- Card header -->
+    <div class="p-5 pb-0">
+        <div class="flex items-start justify-between gap-3 mb-3">
+            <div class="flex-1 min-w-0">
+                <h3 class="font-semibold text-gray-900 text-lg leading-tight truncate">{{ template.name }}</h3>
+                <p class="text-xs text-gray-400 mt-0.5">{{ template.category }}</p>
+            </div>
+            {% if template.is_implemented %}
+            <span class="shrink-0 inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
+                Live
+            </span>
+            {% else %}
+            <span class="shrink-0 inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">
+                Coming Soon
+            </span>
+            {% endif %}
+        </div>
+
+        <!-- Badges -->
+        <div class="flex flex-wrap gap-1.5 mb-3">
+            {% if template.priority_label %}
+            <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium
+                {% if template.priority_label == 'Build first' %}bg-indigo-100 text-indigo-800
+                {% elif template.priority_label == 'High demand' %}bg-orange-100 text-orange-800
+                {% else %}bg-blue-100 text-blue-800{% endif %}">
+                {{ template.priority_label }}
+            </span>
+            {% endif %}
+            {% for tag in template.tags_json %}
+            {% if tag == 'PK' or tag == 'KSA' or tag == 'USA' or tag == 'UAE' or tag == 'Global' %}
+            <span class="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">{{ tag }}</span>
+            {% endif %}
+            {% endfor %}
+        </div>
+
+        <p class="text-sm text-gray-600 line-clamp-3 mb-4">{{ template.description }}</p>
+    </div>
+
+    <!-- Market need score -->
+    <div class="px-5 mb-4">
+        <div class="flex items-center justify-between text-xs mb-1.5">
+            <span class="text-gray-500">Market need</span>
+            <span class="font-semibold text-gray-900">{{ template.market_need_score }}%</span>
+        </div>
+        <div class="w-full bg-gray-100 rounded-full h-2">
+            <div class="h-2 rounded-full transition-all duration-500
+                {% if template.market_need_score >= 90 %}bg-indigo-600
+                {% elif template.market_need_score >= 75 %}bg-orange-500
+                {% else %}bg-blue-500{% endif %}"
+                style="width: {{ template.market_need_score }}%"></div>
+        </div>
+    </div>
+
+    <!-- Implementation progress -->
+    <div class="px-5 mb-5">
+        <div class="flex items-center justify-between text-xs mb-1.5">
+            <span class="text-gray-500">Implementation</span>
+            <span class="font-medium text-gray-700">
+                {% if template.is_implemented %}100%{% else %}Template only{% endif %}
+            </span>
+        </div>
+        <div class="w-full bg-gray-100 rounded-full h-1.5">
+            <div class="h-1.5 rounded-full bg-green-500"
+                 style="width: {% if template.is_implemented %}100{% else %}15{% endif %}%"></div>
+        </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="mt-auto p-5 pt-0 border-t border-gray-50">
+        <div class="pt-4 flex gap-2">
+            <a href="{% url 'agents:detail' slug=template.slug %}"
+               class="flex-1 text-center rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition">
+                View details
+            </a>
+            {% if template.is_implemented %}
+                {% if template.slug in deployed_slugs %}
+                <span class="flex-1 text-center rounded-lg bg-green-50 border border-green-200 px-3 py-2 text-sm font-medium text-green-700">
+                    Deployed
+                </span>
+                {% else %}
+                <form method="post" action="{% url 'agents:deploy' slug=template.slug %}" class="flex-1">
+                    {% csrf_token %}
+                    <button type="submit"
+                            class="w-full rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition">
+                        Deploy
+                    </button>
+                </form>
+                {% endif %}
+            {% else %}
+            <button disabled
+                    class="flex-1 rounded-lg bg-gray-100 px-3 py-2 text-sm font-medium text-gray-400 cursor-not-allowed">
+                Coming soon
+            </button>
+            {% endif %}
+        </div>
+    </div>
+</div>

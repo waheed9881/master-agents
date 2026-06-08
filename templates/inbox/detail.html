@@ -1,0 +1,112 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}{{ conversation.contact.name }} — Inbox{% endblock %}
+
+{% block app_content %}
+<div class="mb-4 flex items-center justify-between">
+    <a href="{% url 'inbox:list' %}" class="inline-flex items-center gap-1 text-sm text-indigo-600 hover:text-indigo-800">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        Back to inbox
+    </a>
+    <div class="flex gap-2" x-data="{ loading: false }">
+        {% if conversation.human_takeover %}
+        <button hx-post="/api/conversations/{{ conversation.pk }}/enable-ai/"
+                hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                hx-swap="none"
+                @htmx:after-request="location.reload()"
+                class="rounded-lg border border-green-300 bg-green-50 px-3 py-1.5 text-sm font-medium text-green-700 hover:bg-green-100">
+            Re-enable AI
+        </button>
+        {% else %}
+        <button hx-post="/api/conversations/{{ conversation.pk }}/human-takeover/"
+                hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                hx-swap="none"
+                @htmx:after-request="location.reload()"
+                class="rounded-lg border border-orange-300 bg-orange-50 px-3 py-1.5 text-sm font-medium text-orange-700 hover:bg-orange-100">
+            Human takeover
+        </button>
+        {% endif %}
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-2">
+        <div class="bg-white rounded-xl border border-gray-200 flex flex-col h-[600px]">
+            <!-- Header -->
+            <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                <div>
+                    <h2 class="font-semibold text-gray-900">{{ conversation.contact.name }}</h2>
+                    <p class="text-xs text-gray-500">{{ conversation.get_channel_type_display }}
+                        {% if conversation.agent_instance %} · {{ conversation.agent_instance.name }}{% endif %}
+                    </p>
+                </div>
+                {% if conversation.human_takeover %}
+                <span class="text-xs bg-orange-100 text-orange-700 px-2.5 py-1 rounded-full font-medium">Human takeover active</span>
+                {% else %}
+                <span class="text-xs bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded-full font-medium">AI responding</span>
+                {% endif %}
+            </div>
+
+            <!-- Messages -->
+            <div id="message-list" class="flex-1 overflow-y-auto p-6 space-y-4">
+                {% for msg in messages %}
+                <div class="flex {% if msg.sender_type == 'customer' %}justify-start{% else %}justify-end{% endif %}">
+                    <div class="max-w-[80%] rounded-2xl px-4 py-2.5 text-sm
+                        {% if msg.sender_type == 'customer' %}bg-gray-100 text-gray-900 rounded-bl-md
+                        {% elif msg.sender_type == 'ai' %}bg-indigo-600 text-white rounded-br-md
+                        {% elif msg.sender_type == 'human' %}bg-green-600 text-white rounded-br-md
+                        {% else %}bg-yellow-50 text-yellow-800 border border-yellow-200 text-center w-full max-w-full{% endif %}">
+                        {% if msg.sender_type != 'customer' and msg.sender_type != 'system' %}
+                        <p class="text-xs opacity-75 mb-0.5">{{ msg.get_sender_type_display }}</p>
+                        {% endif %}
+                        <p>{{ msg.message_text }}</p>
+                        <p class="text-xs opacity-60 mt-1">{{ msg.created_at|time:"H:i" }}</p>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-center text-gray-400 text-sm py-8">No messages in this conversation.</p>
+                {% endfor %}
+            </div>
+
+            <!-- Staff reply -->
+            <div class="p-4 border-t border-gray-100">
+                <form hx-post="/api/conversations/{{ conversation.pk }}/messages/"
+                      hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                      hx-swap="none"
+                      @htmx:after-request="location.reload()"
+                      class="flex gap-2">
+                    <input type="text" name="message_text" placeholder="Reply as staff..."
+                           class="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-indigo-500 outline-none"
+                           required>
+                    <button type="submit" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">Send</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="space-y-6">
+        <div class="bg-white rounded-xl border border-gray-200 p-6">
+            <h3 class="text-sm font-medium text-gray-500 mb-4">Contact</h3>
+            <p class="font-semibold text-gray-900">{{ conversation.contact.name }}</p>
+            {% if conversation.contact.email %}<p class="text-sm text-gray-600 mt-1">{{ conversation.contact.email }}</p>{% endif %}
+            {% if conversation.contact.phone %}<p class="text-sm text-gray-600">{{ conversation.contact.phone }}</p>{% endif %}
+            <a href="{% url 'crm:leads' %}" class="block mt-4 text-sm text-indigo-600 hover:underline">View in CRM →</a>
+        </div>
+        <div class="bg-white rounded-xl border border-gray-200 p-6">
+            <h3 class="text-sm font-medium text-gray-500 mb-3">Status</h3>
+            <dl class="space-y-2 text-sm">
+                <div class="flex justify-between"><dt class="text-gray-500">Channel</dt><dd>{{ conversation.get_channel_type_display }}</dd></div>
+                <div class="flex justify-between"><dt class="text-gray-500">AI enabled</dt><dd>{% if conversation.ai_enabled %}Yes{% else %}No{% endif %}</dd></div>
+                <div class="flex justify-between"><dt class="text-gray-500">Messages</dt><dd>{{ messages|length }}</dd></div>
+            </dl>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.getElementById('message-list')?.scrollTo(0, document.getElementById('message-list').scrollHeight);
+</script>
+{% endblock %}

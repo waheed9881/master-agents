@@ -1,0 +1,111 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}CRM Leads — AI Agent OS{% endblock %}
+
+{% block app_content %}
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+    <div>
+        <p class="text-gray-500 text-sm">Manage and track all sales leads</p>
+    </div>
+    <div class="flex gap-2">
+        <a href="{% url 'crm:pipeline' %}"
+           class="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+            Pipeline board
+        </a>
+    </div>
+</div>
+
+<!-- Stats row -->
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+        <p class="text-xs text-gray-500">Total leads</p>
+        <p class="text-2xl font-bold text-gray-900">{{ stats.total_leads }}</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+        <p class="text-xs text-gray-500">Hot leads</p>
+        <p class="text-2xl font-bold text-orange-600">{{ stats.hot_leads }}</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+        <p class="text-xs text-gray-500">Qualified</p>
+        <p class="text-2xl font-bold text-blue-600">{{ stats.qualified_leads }}</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+        <p class="text-xs text-gray-500">Demo booked</p>
+        <p class="text-2xl font-bold text-purple-600">{{ stats.demo_booked }}</p>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="bg-white rounded-xl border border-gray-200 p-4 mb-6">
+    <form method="get" class="flex flex-wrap gap-2">
+        {% for value, label in status_choices %}
+        <button type="submit" name="status" value="{{ value }}"
+                class="rounded-lg px-3 py-1.5 text-sm font-medium transition
+                {% if status_filter == value %}bg-indigo-600 text-white{% else %}bg-gray-100 text-gray-600 hover:bg-gray-200{% endif %}">
+            {{ label }}
+        </button>
+        {% endfor %}
+    </form>
+</div>
+
+<!-- Leads table -->
+<div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+    {% if leads %}
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lead</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Score</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Budget</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Updated</th>
+                    <th class="px-6 py-3"></th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                {% for lead in leads %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4">
+                        <p class="font-medium text-gray-900">{{ lead.title }}</p>
+                        {% if lead.need %}<p class="text-xs text-gray-500 truncate max-w-xs">{{ lead.need|truncatechars:60 }}</p>{% endif %}
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-600">
+                        <p>{{ lead.contact.name }}</p>
+                        {% if lead.contact.email %}<p class="text-xs text-gray-400">{{ lead.contact.email }}</p>{% endif %}
+                    </td>
+                    <td class="px-6 py-4">
+                        {% include "crm/partials/lead_status_badge.html" with status=lead.status %}
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-2">
+                            <div class="w-16 bg-gray-100 rounded-full h-1.5">
+                                <div class="h-1.5 rounded-full bg-indigo-600" style="width: {{ lead.score }}%"></div>
+                            </div>
+                            <span class="text-sm font-medium text-gray-700">{{ lead.score }}</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-600">{{ lead.budget|default:"—" }}</td>
+                    <td class="px-6 py-4 text-sm text-gray-500">{{ lead.updated_at|date:"M d, Y" }}</td>
+                    <td class="px-6 py-4 text-right">
+                        <a href="{% url 'crm:lead_detail' lead_id=lead.pk %}"
+                           class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">View →</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-16 px-6">
+        <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
+            <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        </div>
+        <h3 class="text-lg font-medium text-gray-900 mb-1">No leads yet</h3>
+        <p class="text-gray-500 text-sm mb-4">Leads will appear here when customers interact with your AI agents.</p>
+        <p class="text-xs text-gray-400">Run: python scripts/seed_demo_data.py</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

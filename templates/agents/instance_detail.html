@@ -1,0 +1,106 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}{{ instance.name }} — AI Agent OS{% endblock %}
+
+{% block app_content %}
+<div class="mb-6 flex items-center justify-between">
+    <a href="{% url 'agents:gallery' %}" class="inline-flex items-center gap-1 text-sm text-indigo-600 hover:text-indigo-800">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        Back to agents
+    </a>
+    <span class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium
+        {% if instance.status == 'active' %}bg-green-100 text-green-800
+        {% elif instance.status == 'paused' %}bg-yellow-100 text-yellow-800
+        {% else %}bg-gray-100 text-gray-700{% endif %}">
+        {{ instance.get_status_display }}
+    </span>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-2 space-y-6">
+        <div class="bg-white rounded-xl border border-gray-200 p-6">
+            <div class="flex items-start justify-between mb-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900">{{ instance.name }}</h2>
+                    <p class="text-gray-500 text-sm mt-1">Based on {{ instance.template.name }}</p>
+                </div>
+                {% if instance.ai_enabled %}
+                <span class="inline-flex items-center gap-1.5 rounded-full bg-green-50 px-3 py-1 text-xs font-medium text-green-700">
+                    <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                    AI Enabled
+                </span>
+                {% endif %}
+            </div>
+
+            <dl class="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                    <dt class="text-gray-500">Language</dt>
+                    <dd class="font-medium text-gray-900">{{ instance.language|upper }}</dd>
+                </div>
+                <div>
+                    <dt class="text-gray-500">Tone</dt>
+                    <dd class="font-medium text-gray-900 capitalize">{{ instance.tone }}</dd>
+                </div>
+                <div>
+                    <dt class="text-gray-500">Created</dt>
+                    <dd class="font-medium text-gray-900">{{ instance.created_at|date:"M d, Y" }}</dd>
+                </div>
+                <div>
+                    <dt class="text-gray-500">Template</dt>
+                    <dd class="font-medium text-gray-900">{{ instance.template.category }}</dd>
+                </div>
+            </dl>
+        </div>
+
+        {% if instance.settings %}
+        <div class="bg-white rounded-xl border border-gray-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Qualification Questions</h3>
+            <ol class="list-decimal list-inside space-y-2 text-sm text-gray-700">
+                {% for q in instance.settings.qualification_questions_json %}
+                <li>{{ q }}</li>
+                {% empty %}
+                <li class="text-gray-400 list-none">No questions configured yet.</li>
+                {% endfor %}
+            </ol>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="space-y-6">
+        <div class="bg-white rounded-xl border border-gray-200 p-6">
+            <h3 class="font-semibold text-gray-900 mb-4">Quick Actions</h3>
+            <div class="space-y-2">
+                <a href="#" class="block w-full text-center rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                    Configure settings
+                    <span class="block text-xs text-gray-400 mt-0.5">Phase 2+ wizard</span>
+                </a>
+                <a href="{% url 'inbox:webchat_demo' %}" class="block w-full text-center rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                    Test web chat
+                </a>
+                <a href="#" class="block w-full text-center rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                    Knowledge base
+                    <span class="block text-xs text-gray-400 mt-0.5">Phase 6</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="bg-amber-50 rounded-xl border border-amber-100 p-5">
+            <h4 class="font-semibold text-amber-900 mb-2">Setup checklist</h4>
+            <ul class="text-sm text-amber-800 space-y-2">
+                <li class="flex items-center gap-2">
+                    <span class="text-green-600">✓</span> Agent deployed
+                </li>
+                <li class="flex items-center gap-2">
+                    <span class="text-gray-400">○</span> Business settings
+                </li>
+                <li class="flex items-center gap-2">
+                    <span class="text-gray-400">○</span> Knowledge base
+                </li>
+                <li class="flex items-center gap-2">
+                    <span class="text-gray-400">○</span> Connect channels
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

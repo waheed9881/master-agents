@@ -1,0 +1,23 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}AI Agents — AI Agent OS{% endblock %}
+
+{% block app_content %}
+<div class="mb-8">
+    <p class="text-gray-500 max-w-2xl">
+        Choose from 10 pre-built AI agent templates. Deploy the Sales Closing Agent for WhatsApp,
+        Instagram, and web chat — more agents coming soon.
+    </p>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+    {% for template in templates %}
+    {% include "agents/partials/agent_card.html" with template=template %}
+    {% empty %}
+    <div class="col-span-full text-center py-16 bg-white rounded-xl border border-dashed border-gray-300">
+        <p class="text-gray-500 mb-4">No agent templates found.</p>
+        <p class="text-sm text-gray-400">Run: python scripts/seed_agent_templates.py</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

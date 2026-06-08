@@ -1,0 +1,194 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}Web Chat Demo — AI Agent OS{% endblock %}
+
+{% block app_content %}
+<div class="mb-6">
+    <a href="{% url 'inbox:list' %}" class="inline-flex items-center gap-1 text-sm text-indigo-600 hover:text-indigo-800">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        Back to inbox
+    </a>
+</div>
+
+<div class="max-w-2xl mx-auto" x-data="webchatDemo()">
+    <div class="bg-white rounded-xl border border-gray-200 shadow-lg overflow-hidden">
+        <!-- Chat header -->
+        <div class="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4 text-white">
+            <h2 class="font-semibold text-lg">Customer Web Chat</h2>
+            <p class="text-indigo-100 text-sm">Simulate a customer message — appears in inbox with AI stub reply</p>
+        </div>
+
+        <!-- Customer info -->
+        <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1">Your name</label>
+                <input x-model="customerName" type="text" placeholder="John Smith"
+                       class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500">
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1">Email (optional)</label>
+                <input x-model="customerEmail" type="email" placeholder="john@example.com"
+                       class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500">
+            </div>
+            {% if agents %}
+            <div class="sm:col-span-2">
+                <label class="block text-xs font-medium text-gray-500 mb-1">Agent</label>
+                <select x-model="agentInstanceId"
+                        class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-indigo-500">
+                    {% for agent in agents %}
+                    <option value="{{ agent.pk }}">{{ agent.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% else %}
+            <div class="sm:col-span-2 rounded-lg bg-amber-50 border border-amber-200 p-3 text-sm text-amber-800">
+                No active agent deployed. <a href="{% url 'agents:gallery' %}" class="underline">Deploy Sales Closing Agent</a> first.
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Messages -->
+        <div class="h-96 overflow-y-auto p-6 space-y-4 bg-gray-50" id="chat-messages">
+            <template x-for="msg in messages" :key="msg.id">
+                <div :class="msg.sender_type === 'customer' ? 'flex justify-end' : 'flex justify-start'">
+                    <div class="max-w-[80%] rounded-2xl px-4 py-2.5 text-sm"
+                         :class="{
+                            'bg-indigo-600 text-white rounded-br-md': msg.sender_type === 'customer',
+                            'bg-white border border-gray-200 text-gray-900 rounded-bl-md': msg.sender_type === 'ai',
+                            'bg-yellow-50 border border-yellow-200 text-yellow-800': msg.sender_type === 'system'
+                         }">
+                        <p x-text="msg.message_text"></p>
+                        <p class="text-xs opacity-60 mt-1" x-text="msg.time"></p>
+                    </div>
+                </div>
+            </template>
+            <div x-show="messages.length === 0" class="text-center text-gray-400 text-sm py-12">
+                Send a message to start the conversation
+            </div>
+            <div x-show="loading" class="flex justify-start">
+                <div class="bg-white border border-gray-200 rounded-2xl px-4 py-3 text-sm text-gray-500">
+                    AI is typing...
+                </div>
+            </div>
+        </div>
+
+        <!-- Input -->
+        <div class="p-4 border-t border-gray-100">
+            <form @submit.prevent="sendMessage" class="flex gap-2">
+                <input x-model="inputText" type="text" placeholder="Type a customer message..."
+                       class="flex-1 rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                       :disabled="loading">
+                <button type="submit"
+                        class="rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
+                        :disabled="loading || !inputText.trim()">
+                    Send
+                </button>
+            </form>
+            <p class="text-xs text-gray-400 mt-2 text-center">
+                Try: "Hi, I need pricing" or "Can I schedule a demo?"
+            </p>
+        </div>
+    </div>
+
+    <div x-show="lastConversationId" class="mt-4 text-center">
+        <a :href="'/inbox/' + lastConversationId + '/'"
+           class="text-sm text-indigo-600 hover:underline">
+            View conversation in inbox →
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function webchatDemo() {
+    return {
+        customerName: 'Demo Customer',
+        customerEmail: '',
+        agentInstanceId: '{{ agents.first.pk|default:"" }}',
+        sessionKey: '',
+        inputText: '',
+        messages: [],
+        loading: false,
+        lastConversationId: null,
+        msgId: 0,
+
+        async sendMessage() {
+            const text = this.inputText.trim();
+            if (!text || this.loading) return;
+
+            this.messages.push({
+                id: ++this.msgId,
+                sender_type: 'customer',
+                message_text: text,
+                time: new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}),
+            });
+            this.inputText = '';
+            this.loading = true;
+            this.scrollChat();
+
+            try {
+                const resp = await fetch('/api/webchat/message/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}',
+                    },
+                    body: JSON.stringify({
+                        message_text: text,
+                        customer_name: this.customerName,
+                        customer_email: this.customerEmail,
+                        agent_instance_id: this.agentInstanceId ? parseInt(this.agentInstanceId) : null,
+                        session_key: this.sessionKey,
+                    }),
+                });
+                const data = await resp.json();
+                if (resp.ok) {
+                    this.sessionKey = data.session_key;
+                    this.lastConversationId = data.conversation_id;
+                    if (data.ai_reply) {
+                        this.messages.push({
+                            id: ++this.msgId,
+                            sender_type: 'ai',
+                            message_text: data.ai_reply,
+                            time: new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}),
+                        });
+                    }
+                    if (data.lead_id) {
+                        this.messages.push({
+                            id: ++this.msgId,
+                            sender_type: 'system',
+                            message_text: `Lead #${data.lead_id} updated in CRM (intent: ${data.intent || 'n/a'})`,
+                            time: '',
+                        });
+                    }
+                } else {
+                    this.messages.push({
+                        id: ++this.msgId,
+                        sender_type: 'system',
+                        message_text: data.detail || 'Error sending message',
+                        time: '',
+                    });
+                }
+            } catch (e) {
+                this.messages.push({
+                    id: ++this.msgId,
+                    sender_type: 'system',
+                    message_text: 'Network error. Please try again.',
+                    time: '',
+                });
+            }
+            this.loading = false;
+            this.scrollChat();
+        },
+
+        scrollChat() {
+            this.$nextTick(() => {
+                const el = document.getElementById('chat-messages');
+                if (el) el.scrollTop = el.scrollHeight;
+            });
+        },
+    };
+}
+</script>
+{% endblock %}
