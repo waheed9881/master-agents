@@ -12,6 +12,23 @@
 | X-Frame-Options | DENY in production |
 | Secure cookies | Enabled when DEBUG=False |
 
+## Release Freeze Security Requirements
+
+The following are **mandatory** before staging or production deployment:
+
+| Requirement | Rule |
+|-------------|------|
+| Demo password | **Must be changed** — default is `Admin123!` |
+| DEBUG | **Must be False** in staging and production |
+| SECRET_KEY | **Must be unique** — 50+ random characters, never use defaults |
+| ALLOWED_HOSTS | **Must be strict** — explicit domain list only, no wildcards |
+| CSRF_TRUSTED_ORIGINS | **Must be configured** when DEBUG=False and using HTTPS |
+| Meta live mode | **Requires real signature validation** — set `INTEGRATIONS_MOCK_MODE=False` and configure `META_APP_SECRET` |
+| Credential encryption | **Placeholder only** — Fernet encryption not fully implemented in MVP |
+| Webhook rate limiting | **Required before production** — not implemented in MVP |
+| Backups | **Required before production** — manual procedure documented in RUNBOOK |
+| Monitoring | **Required before production** — no APM/error tracking in MVP |
+
 ## Secrets Handling
 
 - All secrets via environment variables (django-environ)
@@ -36,14 +53,15 @@ When `INTEGRATIONS_MOCK_MODE=False`:
 - Meta sends `X-Hub-Signature-256` header
 - Server validates HMAC-SHA256 using `META_APP_SECRET`
 - Invalid signatures return 403
+- **Live Meta mode requires real signature validation** — do not disable in production
 
 When `INTEGRATIONS_MOCK_MODE=True` (default):
 
-- Signature validation is skipped (safe for local/demo)
+- Signature validation is skipped (safe for local/demo only)
 
 ## Credential Encryption Placeholder
 
-`ChannelCredential.access_token_encrypted` and `app_secret_encrypted` fields exist but encryption is not fully implemented in MVP.
+`ChannelCredential.access_token_encrypted` and `app_secret_encrypted` fields exist but **encryption is not fully implemented** in MVP. Values may be stored without Fernet encryption until `CREDENTIALS_ENCRYPTION_KEY` integration is completed.
 
 Set `CREDENTIALS_ENCRYPTION_KEY` (Fernet key) for future use:
 
@@ -59,20 +77,24 @@ Before public production launch:
 | Item | Action |
 |------|--------|
 | DEBUG | Set False |
-| SECRET_KEY | 50+ char random string |
-| ALLOWED_HOSTS | Explicit domain list |
-| CSRF_TRUSTED_ORIGINS | HTTPS origins |
-| Demo password | Change `admin@example.com` password |
+| SECRET_KEY | 50+ char random string, unique per environment |
+| ALLOWED_HOSTS | Explicit domain list, no `*` wildcard |
+| CSRF_TRUSTED_ORIGINS | HTTPS origins matching your domain |
+| Demo password | Change `admin@example.com` password or remove account |
 | HTTPS | Required for Meta webhooks |
 | Credential encryption | Implement Fernet encryption |
-| Rate limiting | Add to webhooks and web chat |
+| Rate limiting | Add to webhooks and web chat (required) |
+| Backups | Automated database backups (required) |
+| Monitoring | Error tracking and uptime checks (required) |
 | Admin URL | Consider changing `/admin/` path |
 | Database | Use managed Postgres with SSL |
 | Redis | Password-protected instance |
 
 ## Rate Limiting Recommendations
 
-Not implemented in MVP. Recommended for production:
+**Not implemented in MVP. Required before production.**
+
+Recommended limits:
 
 - `/api/webchat/message/` — 30 req/min per session_key
 - `/api/webhooks/whatsapp/` — 100 req/min per IP
@@ -85,7 +107,7 @@ Use django-ratelimit or nginx rate limiting.
 
 Demo seed creates `admin@example.com` / `Admin123!`.
 
-**Change immediately before any external demo or deployment:**
+**Change immediately before any external demo, staging, or production deployment:**
 
 ```bash
 python manage.py changepassword admin@example.com
@@ -97,16 +119,20 @@ Or via Django admin after login.
 
 ### ALLOWED_HOSTS
 
-Comma-separated in `.env`:
+Must be strict — list only domains that should reach the app:
+
 ```
-ALLOWED_HOSTS=localhost,127.0.0.1,yourdomain.com
+ALLOWED_HOSTS=staging.yourdomain.com
 ```
+
+Never use `*` in production.
 
 ### CSRF_TRUSTED_ORIGINS
 
 Required when using HTTPS and DEBUG=False:
+
 ```
-CSRF_TRUSTED_ORIGINS=https://yourdomain.com,https://staging.yourdomain.com
+CSRF_TRUSTED_ORIGINS=https://staging.yourdomain.com
 ```
 
 ### CORS
@@ -120,3 +146,5 @@ python manage.py check --deploy
 python manage.py check_deploy_ready
 python scripts/check_environment.py
 ```
+
+See also [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md) for pre-release security gate.

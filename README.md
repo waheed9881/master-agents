@@ -2,7 +2,7 @@
 
 Production-minded SaaS platform for business AI agents. Modular monolith architecture with a shared agent engine and pluggable agent modules.
 
-**MVP Status:** Phases 1-9 complete. Ready for internal demo, client demo, and staging deployment.
+**MVP Status:** Phases 1-10 complete. **Release freeze** — ready for internal demo, client demo, and staging deployment. Not approved for public production without security hardening (see limitations below).
 
 ## Product Overview
 
@@ -35,7 +35,7 @@ docker compose exec web python scripts/seed_demo_data.py
 - Email: `admin@example.com`
 - Password: `Admin123!`
 
-> **Warning:** Change the demo password before deploying to staging or production.
+> **Staging warning:** Change the demo password before any external demo or staging deployment.
 
 ## Quick Start (Local)
 
@@ -57,19 +57,21 @@ python scripts/seed_demo_data.py
 python manage.py runserver
 ```
 
-## Test Command
+## Validation Commands
 
 ```bash
+# Full test suite
 python -m pytest tests/ -q
-```
 
-Other validation:
-
-```bash
+# Environment and deployment checks
 python manage.py check
 python scripts/check_environment.py
 python manage.py check_deploy_ready
+
+# Route and API audits
 python scripts/smoke_test.py
+python scripts/audit_routes.py
+python scripts/api_smoke_test.py
 ```
 
 ## Project Structure
@@ -88,7 +90,7 @@ apps/
   agent_modules/ # Agent-specific business logic
   analytics/     # Reporting and dashboards
 templates/       # Django templates (HTMX + Alpine + Tailwind)
-scripts/         # Seed and utility scripts
+scripts/         # Seed, audit, and validation scripts
 tests/           # pytest test suite
 docs/            # Architecture, deployment, and runbook docs
 ```
@@ -106,11 +108,14 @@ docs/            # Architecture, deployment, and runbook docs
 | [Knowledge Base](docs/KNOWLEDGE_BASE.md) | Content and search |
 | [Analytics](docs/ANALYTICS.md) | Metrics and dashboards |
 | [Deployment](docs/DEPLOYMENT.md) | Local, Docker, staging, production |
+| [Staging Plan](docs/STAGING_DEPLOYMENT_PLAN.md) | Staging server deployment guide |
+| [Release Checklist](docs/RELEASE_CHECKLIST.md) | Pre-release gate checklist |
+| [MVP Acceptance](docs/FINAL_MVP_ACCEPTANCE_REPORT.md) | Final acceptance report |
 | [Security](docs/SECURITY.md) | Secrets, webhooks, hardening |
 | [QA Checklist](docs/QA_CHECKLIST.md) | Manual acceptance tests |
 | [Runbook](docs/RUNBOOK.md) | Operational commands |
 | [Troubleshooting](docs/TROUBLESHOOTING.md) | Common errors and fixes |
-| [Release Notes](docs/RELEASE_NOTES.md) | Phase 1-9 summary |
+| [Release Notes](docs/RELEASE_NOTES.md) | Phase 1-10 summary |
 
 ## API Summary
 
@@ -150,16 +155,28 @@ Full reference: [docs/API_ENDPOINTS.md](docs/API_ENDPOINTS.md)
 | 7 | Complete | Analytics dashboard and APIs |
 | 8 | Complete | WhatsApp/Instagram webhook hardening |
 | 9 | Complete | Docs, CI, security, deployment readiness |
+| 10 | Complete | Release freeze, audit, staging DevOps |
 
-## Deployment Note
+## Staging Deployment
 
-Before staging or production:
+1. Follow [docs/STAGING_DEPLOYMENT_PLAN.md](docs/STAGING_DEPLOYMENT_PLAN.md)
+2. Complete [docs/RELEASE_CHECKLIST.md](docs/RELEASE_CHECKLIST.md)
+3. Set `DEBUG=False`, strong `SECRET_KEY`, `ALLOWED_HOSTS`, `CSRF_TRUSTED_ORIGINS`
+4. Run `python manage.py check_deploy_ready`
+5. Change demo admin password
 
-1. Set `DEBUG=False` and a strong `SECRET_KEY`
-2. Configure `ALLOWED_HOSTS` and `CSRF_TRUSTED_ORIGINS`
-3. Run `python manage.py check_deploy_ready`
-4. Change the demo admin password
-5. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for full checklist
+## Production Limitations
+
+This MVP is **not production-ready** without addressing:
+
+- Default demo credentials (`Admin123!`)
+- Mock AI provider and mock Meta integrations (by default)
+- No rate limiting on webhooks or web chat
+- Credential encryption is placeholder only
+- No automated backups or monitoring
+- Only 1 of 10 agent modules implemented
+
+See [docs/SECURITY.md](docs/SECURITY.md) and [docs/FINAL_MVP_ACCEPTANCE_REPORT.md](docs/FINAL_MVP_ACCEPTANCE_REPORT.md).
 
 ## License
 

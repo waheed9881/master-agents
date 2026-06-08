@@ -6,7 +6,7 @@ The integrations app (`apps/integrations/`) handles WhatsApp and Instagram via M
 
 ## Web Chat
 
-- Demo page: `/inbox/webchat-demo/`
+- Demo page: `/inbox/webchat/`
 - API: `POST /api/webchat/message/`
 - No Meta credentials required
 - Uses `session_key` to maintain conversation continuity

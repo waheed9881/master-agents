@@ -59,7 +59,7 @@ Mark each item PASS / FAIL / N/A. All core items should PASS before client demo.
 
 ## Web Chat
 
-- [ ] Web chat demo page loads at `/inbox/webchat-demo/`
+- [ ] Web chat demo page loads at `/inbox/webchat/`
 - [ ] Send customer message receives AI reply
 - [ ] Conversation created in inbox
 - [ ] `POST /api/webchat/message/` returns JSON reply

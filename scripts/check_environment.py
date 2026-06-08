@@ -27,13 +27,11 @@ REQUIRED_ENV_VARS = [
     "INTEGRATIONS_MOCK_MODE",
 ]
 
-OPTIONAL_AI_VARS = ["OPENAI_API_KEY", "GROQ_API_KEY", "GEMINI_API_KEY"]
-OPTIONAL_META_VARS = [
-    "META_APP_SECRET",
-    "META_ACCESS_TOKEN",
-    "WHATSAPP_PHONE_NUMBER_ID",
-    "INSTAGRAM_PAGE_ID",
-]
+INSECURE_SECRET_KEYS = {
+    "dev-insecure-key-change-in-production",
+    "change-me-in-production-use-a-long-random-string",
+}
+LOCAL_ONLY_HOSTS = {"localhost", "127.0.0.1", "web", "testserver"}
 
 PASS = "PASS"
 WARN = "WARN"
@@ -114,10 +112,12 @@ def check_required_env_vars() -> None:
             missing.append(var)
 
     secret = getattr(settings, "SECRET_KEY", "")
-    if secret and secret != "dev-insecure-key-change-in-production":
-        record(PASS, "SECRET_KEY", "set")
+    if not secret or secret in INSECURE_SECRET_KEYS:
+        record(WARN, "SECRET_KEY", "default or missing (change for staging/production)")
+    elif len(secret) < 32:
+        record(WARN, "SECRET_KEY", f"set but only {len(secret)} chars (use 32+)")
     else:
-        record(WARN, "SECRET_KEY", "using dev default (change for staging/production)")
+        record(PASS, "SECRET_KEY", "set")
 
     if missing:
         record(WARN, "Required env vars", f"missing or default: {', '.join(missing)}")
@@ -152,8 +152,40 @@ def check_integrations_mock_mode() -> None:
     mock_mode = getattr(settings, "INTEGRATIONS_MOCK_MODE", True)
     if mock_mode:
         record(PASS, "Integrations mock mode", "enabled (safe for demo)")
+        return
+
+    record(WARN, "Integrations mock mode", "disabled (live Meta credentials required)")
+    missing = []
+    if not getattr(settings, "META_APP_SECRET", ""):
+        missing.append("META_APP_SECRET")
+    if not getattr(settings, "META_ACCESS_TOKEN", ""):
+        missing.append("META_ACCESS_TOKEN")
+    if not getattr(settings, "WHATSAPP_PHONE_NUMBER_ID", "") and not getattr(
+        settings, "INSTAGRAM_PAGE_ID", ""
+    ):
+        missing.append("WHATSAPP_PHONE_NUMBER_ID or INSTAGRAM_PAGE_ID")
+    if missing:
+        record(WARN, "Meta credentials", f"missing: {', '.join(missing)}")
+
+
+def check_staging_security() -> None:
+    from django.conf import settings
+
+    if settings.DEBUG:
+        record(PASS, "Staging security", "DEBUG=True (dev mode, checks skipped)")
+        return
+
+    hosts = set(getattr(settings, "ALLOWED_HOSTS", []))
+    if not hosts or hosts.issubset(LOCAL_ONLY_HOSTS):
+        record(WARN, "ALLOWED_HOSTS", f"{list(hosts)} (add staging/production domain)")
     else:
-        record(WARN, "Integrations mock mode", "disabled (live Meta credentials required)")
+        record(PASS, "ALLOWED_HOSTS", ", ".join(settings.ALLOWED_HOSTS))
+
+    csrf = getattr(settings, "CSRF_TRUSTED_ORIGINS", [])
+    if not csrf:
+        record(WARN, "CSRF_TRUSTED_ORIGINS", "empty (required when DEBUG=False)")
+    else:
+        record(PASS, "CSRF_TRUSTED_ORIGINS", ", ".join(csrf))
 
 
 def check_migrations() -> None:
@@ -196,6 +228,7 @@ def main() -> int:
     check_redis()
     check_ai_provider()
     check_integrations_mock_mode()
+    check_staging_security()
     check_migrations()
     check_static_media()
 

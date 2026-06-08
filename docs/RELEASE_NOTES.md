@@ -2,9 +2,9 @@
 
 ## AI Agent OS MVP — Phases 1–9
 
-**Version:** MVP 1.0 (Phase 9 complete)  
+**Version:** MVP 1.0 (Phase 10 complete)  
 **Date:** June 2026  
-**Status:** Ready for internal demo, client demo, and staging deployment
+**Status:** Release freeze — ready for internal demo, client demo, and staging deployment
 
 ---
 
@@ -93,6 +93,19 @@
 - Phase 9 readiness tests
 - Updated README
 
+## Phase 10 — Release Freeze, Final Audit, Staging DevOps
+
+- Full repository audit (docs, scripts, settings, routes)
+- Route audit script (`scripts/audit_routes.py`)
+- API smoke test script (`scripts/api_smoke_test.py`)
+- Release checklist (`docs/RELEASE_CHECKLIST.md`)
+- Staging deployment plan (`docs/STAGING_DEPLOYMENT_PLAN.md`)
+- Final MVP acceptance report (`docs/FINAL_MVP_ACCEPTANCE_REPORT.md`)
+- Enhanced environment and deploy readiness checks
+- Security doc updates with production blockers
+- Doc fixes (webchat route `/inbox/webchat/`)
+- Phase 10 release readiness tests
+
 ---
 
 ## Current MVP Status
@@ -109,7 +122,8 @@
 | WhatsApp/Instagram | Mock mode complete, live Meta pending |
 | Documentation | Complete |
 | CI pipeline | Complete |
-| Test suite | 85+ tests passing |
+| Test suite | 130+ tests passing |
+| Release audit | Route + API smoke scripts |
 
 ## Demo Credentials
 

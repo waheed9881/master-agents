@@ -8,6 +8,7 @@ INSECURE_SECRET_KEYS = {
     "dev-insecure-key-change-in-production",
     "change-me-in-production-use-a-long-random-string",
 }
+LOCAL_ONLY_HOSTS = {"localhost", "127.0.0.1", "web", "testserver"}
 DEMO_EMAIL = "admin@example.com"
 
 
@@ -28,11 +29,15 @@ class Command(BaseCommand):
             self._line("PASS", "DEBUG", "False")
 
         hosts = settings.ALLOWED_HOSTS
-        if not hosts or hosts == ["localhost", "127.0.0.1"]:
-            self._line("WARN", "ALLOWED_HOSTS", f"{hosts} (add production domain)")
+        host_set = set(hosts or [])
+        if not settings.DEBUG and (not host_set or host_set.issubset(LOCAL_ONLY_HOSTS)):
+            self._line("WARN", "ALLOWED_HOSTS", f"{hosts} (must include staging/production domain)")
             warnings += 1
-        else:
+        elif hosts:
             self._line("PASS", "ALLOWED_HOSTS", ", ".join(hosts))
+        else:
+            self._line("WARN", "ALLOWED_HOSTS", "empty")
+            warnings += 1
 
         secret = settings.SECRET_KEY
         if not secret or secret in INSECURE_SECRET_KEYS:
@@ -78,6 +83,18 @@ class Command(BaseCommand):
         else:
             self._line("WARN", "Meta mock mode", "disabled (live Meta setup required)")
             warnings += 1
+            missing_meta = []
+            if not getattr(settings, "META_APP_SECRET", ""):
+                missing_meta.append("META_APP_SECRET")
+            if not getattr(settings, "META_ACCESS_TOKEN", ""):
+                missing_meta.append("META_ACCESS_TOKEN")
+            if not getattr(settings, "WHATSAPP_PHONE_NUMBER_ID", "") and not getattr(
+                settings, "INSTAGRAM_PAGE_ID", ""
+            ):
+                missing_meta.append("WHATSAPP_PHONE_NUMBER_ID or INSTAGRAM_PAGE_ID")
+            if missing_meta:
+                self._line("WARN", "Meta credentials", f"missing: {', '.join(missing_meta)}")
+                warnings += 1
 
         csrf_origins = getattr(settings, "CSRF_TRUSTED_ORIGINS", [])
         if not settings.DEBUG and not csrf_origins:
