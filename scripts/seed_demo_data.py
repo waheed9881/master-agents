@@ -125,6 +125,13 @@ def seed():
     spec.loader.exec_module(seed_kb_mod)
     seed_kb_mod.seed_knowledge_for_tenant(tenant, agent_instance=tenant.agent_instances.first())
 
+    # Seed integrations channel accounts
+    int_path = Path(__file__).parent / "seed_integrations_demo.py"
+    spec = importlib.util.spec_from_file_location("seed_integrations_demo", int_path)
+    seed_int_mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(seed_int_mod)
+    seed_int_mod.seed_integrations_for_tenant(tenant)
+
     print("\nDemo login:")
     print("  Email: admin@example.com")
     print("  Password: Admin123!")

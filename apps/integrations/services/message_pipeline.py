@@ -43,6 +43,7 @@ class InboundMessageService:
         customer_phone: str = "",
         agent_instance: AgentInstance | None = None,
         session_key: str = "",
+        metadata: dict | None = None,
     ) -> InboundMessageResult:
         contact = find_or_create_contact(
             tenant,
@@ -59,10 +60,15 @@ class InboundMessageService:
             session_key=session_key,
         )
 
+        msg_metadata = dict(metadata or {})
+        msg_metadata.setdefault("channel_type", channel_type)
+        msg_metadata.setdefault("provider", msg_metadata.get("provider", "internal"))
+
         customer_msg = create_message(
             conversation,
             sender_type=SenderType.CUSTOMER,
             message_text=message_text,
+            metadata=msg_metadata,
         )
 
         ai_message_id = None
@@ -90,6 +96,8 @@ class InboundMessageService:
                         "lead_id": lead_id,
                         "agent_run_id": agent_run_id,
                         "handoff": orchestrated.agent_result.should_handoff,
+                        "channel_type": channel_type,
+                        "provider": msg_metadata.get("provider", "internal"),
                     },
                 )
                 ai_message_id = ai_msg.pk
@@ -100,7 +108,7 @@ class InboundMessageService:
                     conversation,
                     sender_type=SenderType.AI,
                     message_text=ai_reply,
-                    metadata={"engine": "stub_fallback"},
+                    metadata={"engine": "stub_fallback", "channel_type": channel_type},
                 )
                 ai_message_id = ai_msg.pk
         elif conversation.ai_enabled and not conversation.human_takeover:
@@ -109,7 +117,7 @@ class InboundMessageService:
                 conversation,
                 sender_type=SenderType.AI,
                 message_text=ai_reply,
-                metadata={"engine": "stub"},
+                metadata={"engine": "stub", "channel_type": channel_type},
             )
             ai_message_id = ai_msg.pk
 
@@ -133,16 +141,5 @@ class InboundMessageService:
         return AgentOrchestrator.run(agent_instance, conversation, message_text)
 
 
-class OutboundMessageService:
-    """Send outbound messages to customers (channel-specific delivery in future)."""
-
-    @staticmethod
-    def send(conversation, message_text: str, sender_type: str = SenderType.AI) -> int:
-        from apps.inbox.services import create_message
-
-        msg = create_message(
-            conversation,
-            sender_type=sender_type,
-            message_text=message_text,
-        )
-        return msg.pk
+# Backward-compatible re-export
+from apps.integrations.services.outbound import OutboundMessageService  # noqa: E402

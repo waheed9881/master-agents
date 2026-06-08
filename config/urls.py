@@ -20,6 +20,7 @@ urlpatterns = [
     path("inbox/", include("apps.inbox.urls")),
     path("knowledge/", include("apps.knowledge.urls")),
     path("analytics/", include("apps.analytics.urls")),
+    path("integrations/", include("apps.integrations.urls")),
     path("api/", include("apps.accounts.api_urls")),
     path("api/", include("apps.agents.api_urls")),
     path("api/", include("apps.crm.api_urls")),
@@ -27,5 +28,6 @@ urlpatterns = [
     path("api/", include("apps.knowledge.api_urls")),
     path("api/", include("apps.analytics.api_urls")),
     path("api/", include("apps.agent_engine.api_urls")),
-    path("api/webhooks/", include("apps.integrations.urls")),
+    path("api/", include("apps.integrations.api_urls")),
+    path("api/webhooks/", include("apps.integrations.webhook_urls")),
 ]

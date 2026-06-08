@@ -81,7 +81,7 @@ docs/            # Architecture and runbook docs
 | 5 | ✅ Complete | SalesClosingAgent engine, CRM auto-update |
 | 6 | Complete | Knowledge base UI, APIs, agent search |
 | 7 | Complete | Analytics dashboard and APIs |
-| 8 | Pending | WhatsApp/Instagram webhooks |
+| 8 | Complete | WhatsApp/Instagram webhook hardening |
 | 9 | Pending | Tests, docs, seed data |
 
 ## API (Phase 1–2)
@@ -119,6 +119,10 @@ docs/            # Architecture and runbook docs
 | GET | `/api/analytics/inbox/` | Inbox analytics |
 | GET | `/api/analytics/knowledge/` | Knowledge analytics |
 | GET | `/api/analytics/recent-activity/` | Recent activity feed |
+| GET | `/api/webhooks/whatsapp/` | WhatsApp webhook verify (GET) / inbound (POST) |
+| GET | `/api/webhooks/instagram/` | Instagram webhook verify (GET) / inbound (POST) |
+| GET | `/api/integrations/channel-accounts/` | List channel accounts |
+| GET | `/api/integrations/webhook-events/` | List webhook event log |
 
 ## License
 

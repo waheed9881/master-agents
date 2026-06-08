@@ -12,6 +12,7 @@ env = environ.Env(
     DEBUG=(bool, False),
     ALLOWED_HOSTS=(list, ["localhost", "127.0.0.1"]),
     AI_PROVIDER=(str, "mock"),
+    INTEGRATIONS_MOCK_MODE=(bool, True),
 )
 
 environ.Env.read_env(BASE_DIR / ".env")
@@ -147,6 +148,14 @@ GEMINI_API_KEY = env("GEMINI_API_KEY", default="")
 
 # Credentials encryption
 CREDENTIALS_ENCRYPTION_KEY = env("CREDENTIALS_ENCRYPTION_KEY", default="")
+
+# Meta / WhatsApp / Instagram integrations
+META_VERIFY_TOKEN = env("META_VERIFY_TOKEN", default="ai-agent-os-verify")
+META_APP_SECRET = env("META_APP_SECRET", default="")
+META_ACCESS_TOKEN = env("META_ACCESS_TOKEN", default="")
+WHATSAPP_PHONE_NUMBER_ID = env("WHATSAPP_PHONE_NUMBER_ID", default="")
+INSTAGRAM_PAGE_ID = env("INSTAGRAM_PAGE_ID", default="")
+INTEGRATIONS_MOCK_MODE = env("INTEGRATIONS_MOCK_MODE")
 
 if DEBUG:
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"

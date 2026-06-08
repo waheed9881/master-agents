@@ -60,6 +60,12 @@
                         <p class="text-xs opacity-75 mb-0.5">{{ msg.get_sender_type_display }}</p>
                         {% endif %}
                         <p>{{ msg.message_text }}</p>
+                        {% if msg.metadata_json.external_message_id %}
+                        <p class="text-xs opacity-50 mt-1">Ext ID: {{ msg.metadata_json.external_message_id|truncatechars:20 }}</p>
+                        {% endif %}
+                        {% if msg.metadata_json.mock_mode %}
+                        <p class="text-xs opacity-50">Reply sent in mock mode</p>
+                        {% endif %}
                         <p class="text-xs opacity-60 mt-1">{{ msg.created_at|time:"H:i" }}</p>
                     </div>
                 </div>
@@ -96,7 +102,7 @@
         <div class="bg-white rounded-xl border border-gray-200 p-6">
             <h3 class="text-sm font-medium text-gray-500 mb-3">Status</h3>
             <dl class="space-y-2 text-sm">
-                <div class="flex justify-between"><dt class="text-gray-500">Channel</dt><dd>{{ conversation.get_channel_type_display }}</dd></div>
+                <div class="flex justify-between"><dt class="text-gray-500">Channel</dt><dd>{{ conversation.get_channel_type_display }} ({{ conversation.channel_type }})</dd></div>
                 <div class="flex justify-between"><dt class="text-gray-500">AI enabled</dt><dd>{% if conversation.ai_enabled %}Yes{% else %}No{% endif %}</dd></div>
                 <div class="flex justify-between"><dt class="text-gray-500">Messages</dt><dd>{{ messages|length }}</dd></div>
             </dl>

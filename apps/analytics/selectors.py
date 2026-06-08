@@ -8,6 +8,7 @@ from apps.agent_engine.models import AgentRun, ToolCall, ToolCallStatus
 from apps.agents.models import AgentInstance
 from apps.crm.models import Lead, LeadStatus, Task
 from apps.inbox.models import Conversation, Message, SenderType
+from apps.integrations.models import WebhookEvent, WebhookProcessingStatus
 from apps.knowledge.models import KnowledgeChunk, KnowledgeSource
 from apps.tenants.models import Tenant
 
@@ -127,6 +128,12 @@ def get_overview_counts(tenant: Tenant, range_key: str) -> dict:
         "average_lead_score": round(float(avg_score), 1),
         "total_knowledge_sources": knowledge.count(),
         "agent_count": AgentInstance.objects.filter(tenant=tenant).count(),
+        "webhook_events": _filter_range(WebhookEvent.objects.filter(tenant=tenant), range_key, field="received_at").count(),
+        "failed_webhooks": _filter_range(
+            WebhookEvent.objects.filter(tenant=tenant, processing_status=WebhookProcessingStatus.FAILED),
+            range_key,
+            field="received_at",
+        ).count(),
     }
 
 
