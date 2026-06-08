@@ -1,4 +1,12 @@
 """Configurable business agent built on shared engine primitives."""
+
+SHARED_SAFETY_PROMPT = (
+    "SAFETY RULES: Never guarantee pricing, refunds, medical diagnosis, prescriptions, "
+    "tax/legal/financial advice, property contracts, or final confirmed appointments. "
+    "Always offer human handoff for final decisions. "
+    "Do not claim live WhatsApp or Instagram connection in local mock mode."
+)
+
 from apps.agent_engine.base import BaseAgent
 from apps.agent_engine.generic.config import AgentBrainConfig
 from apps.agent_engine.generic.extractors import GenericExtractorMixin
@@ -123,6 +131,12 @@ class GenericBusinessAgent(
 
         ensure_default_pipeline_stages(tenant)
         return lead.pk
+
+    def build_prompt(self, message, conversation, knowledge_context=""):
+        system, user = super().build_prompt(message, conversation, knowledge_context)
+        suffix = getattr(self.__class__, "prompt_suffix", "")
+        extra = f"\n{suffix}" if suffix else ""
+        return system + "\n" + SHARED_SAFETY_PROMPT + extra, user
 
     def run_with_handoff(self, message: str, conversation: Conversation):
         result = self.run(message, conversation)

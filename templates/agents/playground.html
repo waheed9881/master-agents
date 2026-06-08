@@ -4,53 +4,118 @@
 
 {% block app_content %}
 <div class="mb-6 flex items-center justify-between">
-    <a href="{% url 'agents:instance_detail' agent_id=instance.pk %}" class="text-sm text-indigo-600 hover:text-indigo-800">← Back to agent</a>
+    <a href="{% url 'agents:instance_detail' agent_id=instance.pk %}" class="text-sm text-indigo-600 hover:text-indigo-800">Back to agent</a>
     {% if brain_active %}
     <span class="text-xs rounded-full px-2 py-0.5 bg-green-100 text-green-700">Brain Active</span>
     {% endif %}
 </div>
 
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
     <div class="bg-white rounded-xl border border-gray-200 p-6">
         <h2 class="text-xl font-bold text-gray-900 mb-2">Agent Playground</h2>
-        <p class="text-sm text-gray-500 mb-6">Test {{ instance.name }} with mock channel messages.</p>
+        <p class="text-sm text-gray-500 mb-4">Test {{ instance.name }} with scenario presets or custom messages.</p>
 
         <form method="post" class="space-y-4">
             {% csrf_token %}
-            {% for field in form %}
+            <input type="hidden" name="action" id="form-action" value="send">
+
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1" for="{{ field.id_for_label }}">{{ field.label }}</label>
-                {{ field }}
+                <label class="block text-sm font-medium text-gray-700 mb-1">Channel</label>
+                <select name="channel" id="id_channel" class="pg-input">
+                    <option value="web_chat" {% if form.channel.value == 'web_chat' %}selected{% endif %}>Web Chat</option>
+                    <option value="whatsapp_mock" {% if form.channel.value == 'whatsapp_mock' %}selected{% endif %}>WhatsApp (Mock)</option>
+                    <option value="instagram_mock" {% if form.channel.value == 'instagram_mock' %}selected{% endif %}>Instagram (Mock)</option>
+                </select>
             </div>
-            {% endfor %}
-            <button type="submit" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">
-                Send message
-            </button>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Demo scenario</label>
+                <select name="scenario_id" id="id_scenario_id" class="pg-input">
+                    <option value="">-- Custom message --</option>
+                    {% for s in scenarios %}
+                    <option value="{{ s.id }}" {% if form.scenario_id.value == s.id %}selected{% endif %}>{{ s.title }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Customer message</label>
+                <textarea name="message_text" id="id_message_text" rows="4" class="pg-input">{{ form.message_text.value|default:"" }}</textarea>
+            </div>
+
+            <div class="flex gap-2">
+                <button type="submit" onclick="document.getElementById('form-action').value='load'" class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                    Load scenario
+                </button>
+                <button type="submit" onclick="document.getElementById('form-action').value='send'" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">
+                    Send message
+                </button>
+            </div>
         </form>
     </div>
 
-    {% if playground_result %}
-    <div class="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
-        <h3 class="text-lg font-semibold text-gray-900">Response</h3>
-        <dl class="space-y-3 text-sm">
-            <div><dt class="text-gray-500">Agent Reply</dt><dd class="text-gray-800 whitespace-pre-wrap">{{ playground_result.reply }}</dd></div>
-            <div><dt class="text-gray-500">Detected Intent</dt><dd class="font-medium">{{ playground_result.intent|default:"—" }}</dd></div>
-            <div><dt class="text-gray-500">Agent Run ID</dt><dd>{{ playground_result.agent_run_id|default:"—" }}</dd></div>
-            <div><dt class="text-gray-500">Lead Score / Status</dt><dd>{{ playground_result.lead_score|default:"—" }} / {{ playground_result.lead_status|default:"—" }}</dd></div>
-            <div><dt class="text-gray-500">Handoff</dt><dd>{% if playground_result.should_handoff %}Yes — {{ playground_result.handoff_reason }}{% else %}No{% endif %}</dd></div>
-            {% if playground_result.extracted %}
-            <div>
-                <dt class="text-gray-500 mb-1">Extracted Fields</dt>
-                <dd class="text-xs font-mono bg-gray-50 p-2 rounded border">{{ playground_result.extracted }}</dd>
+    <div class="bg-gray-50 rounded-xl border border-gray-200 p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Expected behavior</h3>
+        {% if selected_scenario %}
+        <dl class="space-y-2 text-sm">
+            <div><dt class="text-gray-500">Scenario</dt><dd class="font-medium">{{ selected_scenario.title }}</dd></div>
+            <div><dt class="text-gray-500">Expected intent</dt><dd class="font-mono text-xs">{{ selected_scenario.expected_intent }}</dd></div>
+            <div><dt class="text-gray-500">Expect handoff</dt><dd>{% if selected_scenario.expect_handoff %}Yes{% else %}No{% endif %}</dd></div>
+            <div><dt class="text-gray-500">Expect CRM lead</dt><dd>{% if selected_scenario.expect_lead %}Yes{% else %}No{% endif %}</dd></div>
+            <div><dt class="text-gray-500">Expect task</dt><dd>{% if selected_scenario.expect_task %}Yes{% else %}No{% endif %}</dd></div>
+            {% if selected_scenario.demo_notes %}
+            <div class="pt-2 border-t border-gray-200">
+                <dt class="text-gray-500 mb-1">Demo notes</dt>
+                <dd class="text-gray-700">{{ selected_scenario.demo_notes }}</dd>
             </div>
             {% endif %}
         </dl>
+        {% else %}
+        <p class="text-sm text-gray-500">Select a scenario or send a custom message.</p>
+        {% endif %}
     </div>
-    {% endif %}
+
+    <div class="bg-white rounded-xl border border-gray-200 p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Actual result</h3>
+        {% if playground_result %}
+        <div class="mb-3">
+            <span class="text-xs rounded-full px-2 py-0.5 font-medium
+                {% if playground_result.overall == 'pass' %}bg-green-100 text-green-800
+                {% elif playground_result.overall == 'warn' %}bg-amber-100 text-amber-800
+                {% else %}bg-red-100 text-red-800{% endif %}">
+                Overall: {{ playground_result.overall|upper }}
+            </span>
+        </div>
+        <dl class="space-y-2 text-sm mb-4">
+            <div><dt class="text-gray-500">Reply</dt><dd class="text-gray-800 whitespace-pre-wrap">{{ playground_result.reply }}</dd></div>
+            <div><dt class="text-gray-500">Detected intent</dt><dd class="font-medium">{{ playground_result.intent|default:"-" }}</dd></div>
+            <div><dt class="text-gray-500">Lead score / status</dt><dd>{{ playground_result.lead_score|default:"-" }} / {{ playground_result.lead_status|default:"-" }}</dd></div>
+            <div><dt class="text-gray-500">Task created</dt><dd>{% if playground_result.task_created %}Yes{% else %}No{% endif %}</dd></div>
+            <div><dt class="text-gray-500">Handoff</dt><dd>{% if playground_result.should_handoff %}Yes - {{ playground_result.handoff_reason }}{% else %}No{% endif %}</dd></div>
+            <div><dt class="text-gray-500">AgentRun ID</dt><dd>{{ playground_result.agent_run_id|default:"-" }}</dd></div>
+        </dl>
+        {% if playground_result.checks %}
+        <h4 class="text-sm font-semibold text-gray-900 mb-2">Quality checks</h4>
+        <ul class="space-y-1 text-xs">
+            {% for check in playground_result.checks %}
+            <li class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full
+                    {% if check.status == 'pass' %}bg-green-500
+                    {% elif check.status == 'warn' %}bg-amber-500
+                    {% else %}bg-red-500{% endif %}"></span>
+                <span class="font-medium">{{ check.name }}</span>
+                <span class="text-gray-500">{{ check.detail }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        {% else %}
+        <p class="text-sm text-gray-500">Send a message to see agent output and quality checks.</p>
+        {% endif %}
+    </div>
 </div>
 
 <style>
-    #id_channel { width: 100%; border: 1px solid #d1d5db; border-radius: 0.5rem; padding: 0.5rem; }
-    #id_message_text { width: 100%; border: 1px solid #d1d5db; border-radius: 0.5rem; padding: 0.5rem; }
+    .pg-input { width: 100%; border: 1px solid #d1d5db; border-radius: 0.5rem; padding: 0.5rem 0.75rem; font-size: 0.875rem; }
 </style>
 {% endblock %}

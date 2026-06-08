@@ -4,14 +4,12 @@ from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 
-from apps.agent_engine.services.orchestrator import AgentOrchestrator
+from apps.agent_engine.demo_scenarios import get_scenario_by_id, get_scenarios_for_slug
+from apps.agent_engine.services.scenario_runner import run_scenario
 from apps.agent_modules.registry import is_agent_implemented
 from apps.agents import selectors, services
 from apps.agents.models import AgentTemplate
 from apps.crm.models import Lead
-from apps.inbox.models import ChannelType
-from apps.inbox.models import SenderType
-from apps.inbox.services import create_message, find_or_create_contact, find_or_create_conversation
 from apps.knowledge.models import KnowledgeSource
 
 
@@ -21,7 +19,9 @@ class AgentPlaygroundForm(forms.Form):
         ("whatsapp_mock", "WhatsApp (Mock)"),
         ("instagram_mock", "Instagram (Mock)"),
     ])
-    message_text = forms.CharField(widget=forms.Textarea(attrs={"rows": 3}))
+    scenario_id = forms.CharField(required=False)
+    message_text = forms.CharField(widget=forms.Textarea(attrs={"rows": 4}))
+    action = forms.CharField(required=False, initial="send")
 
 
 @login_required
@@ -138,7 +138,7 @@ def agent_instance_detail_view(request, agent_id):
 
 @login_required
 def agent_playground_view(request, agent_id):
-    """Local agent testing playground."""
+    """Local agent testing playground with scenario presets."""
     if not request.tenant:
         raise Http404("No tenant")
 
@@ -146,66 +146,52 @@ def agent_playground_view(request, agent_id):
     if not instance:
         raise Http404("Agent not found")
 
+    scenarios = get_scenarios_for_slug(instance.template.slug)
+    selected_scenario = None
     playground_result = None
 
     if request.method == "POST":
         form = AgentPlaygroundForm(request.POST)
         if form.is_valid():
+            action = form.cleaned_data.get("action", "send")
+            scenario_id = form.cleaned_data.get("scenario_id", "")
             channel = form.cleaned_data["channel"]
-            channel_type = ChannelType.WEB_CHAT
-            if channel == "whatsapp_mock":
-                channel_type = ChannelType.WHATSAPP
-            elif channel == "instagram_mock":
-                channel_type = ChannelType.INSTAGRAM
 
-            message_text = form.cleaned_data["message_text"]
-            contact = find_or_create_contact(
-                request.tenant, name="Playground User", source=channel_type
-            )
-            conversation = find_or_create_conversation(
-                request.tenant,
-                contact,
-                channel_type=channel_type,
-                agent_instance=instance,
-                session_key=f"playground_{instance.pk}",
-            )
-            create_message(
-                conversation,
-                sender_type=SenderType.CUSTOMER,
-                message_text=message_text,
-                metadata={"provider": "playground", "channel": channel},
-            )
-            orchestrated = AgentOrchestrator.run(instance, conversation, message_text)
-            agent_result = orchestrated.agent_result if orchestrated else None
-            if agent_result:
-                create_message(
-                    conversation,
-                    sender_type=SenderType.AI,
-                    message_text=agent_result.reply,
-                    metadata={
-                        "engine": "playground",
-                        "intent": agent_result.intent,
-                        "agent_run_id": orchestrated.agent_run_id,
-                    },
+            if action == "load" and scenario_id:
+                selected_scenario = get_scenario_by_id(scenario_id)
+                form = AgentPlaygroundForm(initial={
+                    "channel": channel,
+                    "scenario_id": scenario_id,
+                    "message_text": selected_scenario.customer_message if selected_scenario else "",
+                })
+            else:
+                message_text = form.cleaned_data["message_text"]
+                if scenario_id:
+                    selected_scenario = get_scenario_by_id(scenario_id)
+                run_result = run_scenario(
+                    instance,
+                    selected_scenario or _ad_hoc_scenario(instance.template.slug, message_text),
+                    channel=channel,
                 )
-            lead = Lead.objects.filter(pk=agent_result.lead_id).first() if agent_result and agent_result.lead_id else None
-
-            playground_result = {
-                "reply": agent_result.reply if agent_result else "",
-                "intent": agent_result.intent if agent_result else "",
-                "agent_run_id": orchestrated.agent_run_id if orchestrated else None,
-                "lead_id": agent_result.lead_id if agent_result else None,
-                "lead_status": lead.status if lead else None,
-                "lead_score": lead.score if lead else None,
-                "extracted": agent_result.extracted_lead.__dict__ if agent_result else {},
-                "should_handoff": agent_result.should_handoff if agent_result else False,
-                "handoff_reason": agent_result.handoff_reason if agent_result else "",
-            }
+                playground_result = run_result.to_playground_dict()
+                if scenario_id:
+                    form = AgentPlaygroundForm(initial={
+                        "channel": channel,
+                        "scenario_id": scenario_id,
+                        "message_text": message_text,
+                    })
     else:
+        default_scenario = scenarios[0] if scenarios else None
         form = AgentPlaygroundForm(initial={
             "channel": "web_chat",
-            "message_text": "Hello, I need help",
+            "scenario_id": default_scenario.id if default_scenario else "",
+            "message_text": default_scenario.customer_message if default_scenario else "Hello, I need help",
         })
+        if default_scenario:
+            selected_scenario = default_scenario
+
+    if not selected_scenario and form.initial.get("scenario_id"):
+        selected_scenario = get_scenario_by_id(form.initial.get("scenario_id", ""))
 
     return render(
         request,
@@ -215,7 +201,24 @@ def agent_playground_view(request, agent_id):
             "active_nav": "agents",
             "instance": instance,
             "form": form,
+            "scenarios": scenarios,
+            "selected_scenario": selected_scenario,
             "playground_result": playground_result,
             "brain_active": is_agent_implemented(instance.template.slug),
         },
+    )
+
+
+def _ad_hoc_scenario(template_slug: str, message: str):
+    """Fallback scenario for free-form playground messages."""
+    from apps.agent_engine.demo_scenarios import DemoScenario
+
+    return DemoScenario(
+        id="ad-hoc",
+        template_slug=template_slug,
+        title="Custom message",
+        customer_message=message,
+        expected_intent="general",
+        expect_lead=True,
+        demo_notes="Free-form test — no expected intent comparison.",
     )

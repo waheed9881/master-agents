@@ -2,9 +2,9 @@
 
 ## AI Agent OS MVP — Phases 1–9
 
-**Version:** MVP 1.0 (Phase 10 complete)  
+**Version:** MVP 1.2 (Phase 12 complete)  
 **Date:** June 2026  
-**Status:** Release freeze — ready for internal demo, client demo, and staging deployment
+**Status:** Local demo-ready — 10 agent brains, scenario QA, Demo Center
 
 ---
 
@@ -131,9 +131,25 @@
 - Password: `Admin123!`
 - **Change before any external deployment**
 
+## Phase 11 — Integrations UI & Agent Brains
+
+- Integrations configuration UI (create/edit/test channels)
+- All 10 agent brain modules with shared GenericBusinessAgent architecture
+- Agent playground for local testing
+- WhatsApp/Instagram mock webhook simulator
+
+## Phase 12 — Agent QA & Demo Polish
+
+- Demo scenario library (5+ scenarios per agent)
+- Playground scenario loading with pass/warn quality checks
+- Demo Center at `/demo/`
+- `scripts/audit_agent_quality.py` for automated scenario QA
+- `docs/LOCAL_DEMO_GUIDE.md` with 15/30-minute demo scripts
+- Safety prompt hardening across all agents
+
 ## Known Limitations
 
-- Only Sales Closing Agent has full AI logic
+- AI uses MockAIProvider in local demo (keyword-based, not LLM)
 - Integrations use mock mode by default
 - No vector semantic search
 - Credential encryption is placeholder
@@ -142,8 +158,7 @@
 
 ## What Remains for Live Production
 
-1. Implement remaining 9 agent modules
-2. Live Meta Cloud API integration (disable mock mode)
+1. Live Meta Cloud API integration (disable mock mode)
 3. Fernet credential encryption
 4. pgvector semantic search
 5. Rate limiting and WAF rules

@@ -21,6 +21,7 @@ urlpatterns = [
     path("knowledge/", include("apps.knowledge.urls")),
     path("analytics/", include("apps.analytics.urls")),
     path("integrations/", include("apps.integrations.urls")),
+    path("demo/", include("apps.demo.urls")),
     path("api/", include("apps.accounts.api_urls")),
     path("api/", include("apps.agents.api_urls")),
     path("api/", include("apps.crm.api_urls")),

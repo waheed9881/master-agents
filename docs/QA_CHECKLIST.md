@@ -21,15 +21,36 @@ Mark each item PASS / FAIL / N/A. All core items should PASS before client demo.
 - [ ] Tenant name displayed correctly
 - [ ] Navigation sidebar shows all modules
 
+## Demo Center (Phase 12)
+
+- [ ] Demo Center loads at `/demo/`
+- [ ] Shows 10 active agent brains and mock mode status
+- [ ] Agent scenario table links to playgrounds
+- [ ] `docs/LOCAL_DEMO_GUIDE.md` exists
+
 ## Agents
 
 - [ ] Agent catalog shows 10 template cards at `/agents/`
-- [ ] Only Sales Closing Agent shows "Implemented" badge
+- [ ] All 10 agents show "Brain Active" badge
 - [ ] Template detail page loads
 - [ ] Deploy Sales Agent creates new instance
 - [ ] Agent settings page loads and saves changes
 - [ ] `GET /api/agent-templates/` returns 10 templates
 - [ ] `GET /api/agents/` returns deployed instances
+
+## Agent Playground (Phase 12)
+
+- [ ] Playground loads scenario dropdown per agent
+- [ ] Load scenario fills customer message
+- [ ] Send shows expected vs actual quality checks
+- [ ] WhatsApp mock and Instagram mock channels work
+
+## Agent Quality (Phase 12)
+
+- [ ] `python scripts/audit_agent_quality.py` completes
+- [ ] Clinic urgent symptoms trigger handoff
+- [ ] Finance tax questions trigger handoff
+- [ ] eCommerce refund requests trigger handoff
 
 ## Deploy Sales Agent
 

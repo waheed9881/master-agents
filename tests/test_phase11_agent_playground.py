@@ -49,7 +49,7 @@ class TestAgentPlayground:
             },
         )
         assert response.status_code == 200
-        assert b"Response" in response.content or b"Agent Reply" in response.content
+        assert b"Actual result" in response.content or b"Quality checks" in response.content
         assert AgentRun.objects.filter(tenant=tenant, agent_instance=agent).exists()
 
     def test_playground_whatsapp_mock_channel(self, playground_setup):

@@ -2,14 +2,14 @@
 
 Production-minded SaaS platform for business AI agents. Modular monolith architecture with a shared agent engine and pluggable agent modules.
 
-**MVP Status:** Phases 1-10 complete. **Release freeze** — ready for internal demo, client demo, and staging deployment. Not approved for public production without security hardening (see limitations below).
+**MVP Status:** Phases 1-12 complete. **Local demo-ready** — 10 agent brains, scenario QA, Demo Center, mock integrations. Not approved for public production without security hardening (see limitations below).
 
 ## Product Overview
 
 AI Agent OS lets businesses deploy AI agents for sales, support, and operations across web chat, WhatsApp, and Instagram. The MVP includes:
 
 - Multi-tenant workspaces with role-based access
-- 10 agent templates (1 fully implemented: Sales Closing Agent)
+- 10 agent templates (all with active brain modules)
 - CRM with leads, pipeline, deals, and tasks
 - Unified inbox with human handoff
 - Knowledge base with agent-powered search
@@ -57,6 +57,12 @@ python scripts/seed_demo_data.py
 python manage.py runserver
 ```
 
+## Demo Center
+
+After seeding, open http://localhost:8000/demo/ for the local demo control room.
+
+See [docs/LOCAL_DEMO_GUIDE.md](docs/LOCAL_DEMO_GUIDE.md) for the full 15/30-minute demo script.
+
 ## Validation Commands
 
 ```bash
@@ -72,6 +78,9 @@ python manage.py check_deploy_ready
 python scripts/smoke_test.py
 python scripts/audit_routes.py
 python scripts/api_smoke_test.py
+
+# Agent scenario quality audit
+python scripts/audit_agent_quality.py
 ```
 
 ## Project Structure

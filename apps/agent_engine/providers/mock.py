@@ -31,7 +31,7 @@ class MockAIProvider(AIProviderAdapter):
                 "Of course — I'll arrange for a team member to follow up with you shortly. "
                 "Could you confirm the best phone number or email to reach you?"
             )
-        elif any(w in text_lower for w in ("pay", "buy now", "purchase", "ready to pay", "sign up")):
+        elif re.search(r"\b(ready to pay|buy now|purchase today|sign up)\b", text_lower):
             intent = "ready_to_buy"
             confidence = 0.93
             reply = (

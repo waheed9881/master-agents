@@ -1,5 +1,6 @@
 """Sales closing agent — WhatsApp + Instagram + web chat MVP."""
 from apps.agent_engine.base import BaseAgent
+from apps.agent_engine.generic.business_agent import SHARED_SAFETY_PROMPT
 from apps.agent_engine.services.lead_extraction import ExtractedLeadData
 from apps.crm.models import LeadStatus
 from apps.crm.services import (
@@ -18,6 +19,13 @@ class SalesClosingAgent(BaseAgent):
     """Qualify leads, answer from knowledge, score, and hand off when needed."""
 
     template_slug = "sales-closing-agent"
+
+    def build_prompt(self, message, conversation, knowledge_context=""):
+        system, user = super().build_prompt(message, conversation, knowledge_context)
+        return (
+            system + "\n" + SHARED_SAFETY_PROMPT
+            + "\nNever invent pricing. Hand off ready-to-buy and sensitive requests to humans."
+        ), user
 
     def decide_next_action(self, understanding: dict, ai_result: dict) -> str:
         intent = ai_result.get("intent", "")

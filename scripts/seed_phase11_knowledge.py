@@ -15,6 +15,10 @@ from apps.knowledge.services import create_knowledge_source
 from apps.tenants.models import Tenant
 
 AGENT_KNOWLEDGE = {
+    "sales-closing-agent": [
+        ("Sales Process Overview", KnowledgeSourceType.TEXT, "Qualify leads by service, budget, and timeline. Book demos when requested. Hot leads get priority follow-up."),
+        ("Pricing Disclaimer", KnowledgeSourceType.POLICY, "Pricing is indicative only. Final quotes and contracts are confirmed by human sales staff, not the AI assistant."),
+    ],
     "real-estate-agent": [
         ("Property Buying Process", KnowledgeSourceType.TEXT, "Buyers submit budget and location. We match listings and schedule viewings within 48 hours."),
         ("Visit Booking Policy", KnowledgeSourceType.POLICY, "Viewings are confirmed by staff. Same-day visits may be available for hot leads."),
@@ -44,6 +48,7 @@ AGENT_KNOWLEDGE = {
     ],
     "ecommerce-agent": [
         ("Order and Refund Policy", KnowledgeSourceType.POLICY, "Orders ship in 2-3 days. Refunds within 14 days for unused items. Exchanges within 30 days."),
+        ("Product Support FAQ", KnowledgeSourceType.FAQ, "For order tracking provide order ID. Refund approval is handled by support staff, not guaranteed by AI."),
     ],
     "recruitment-agent": [
         ("Hiring Process", KnowledgeSourceType.TEXT, "Apply → AI screening → HR review → interview → offer."),
@@ -56,6 +61,10 @@ AGENT_KNOWLEDGE = {
 }
 
 AGENT_SETTINGS = {
+    "sales-closing-agent": {
+        "business_name": "Demo Company",
+        "services_json": ["WhatsApp Sales", "Instagram DM", "Web Chat", "CRM"],
+    },
     "real-estate-agent": {
         "business_name": "Demo Realty",
         "services_json": ["Residential sales", "Rentals", "Property tours"],

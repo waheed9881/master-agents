@@ -2,8 +2,8 @@
 
 **Project:** AI Agent OS  
 **Report date:** June 2026  
-**Release:** MVP 1.0 (Phase 10 — Release Freeze)  
-**Verdict:** Accepted for internal demo and staging deployment
+**Release:** MVP 1.2 (Phase 12 — Local Demo Pack)  
+**Verdict:** Accepted for polished local client/internal demo
 
 ---
 
@@ -21,6 +21,8 @@
 | 8 | WhatsApp/Instagram hardening | Complete |
 | 9 | QA, docs, CI, deployment readiness | Complete |
 | 10 | Release freeze, audit, staging DevOps | Complete |
+| 11 | Integrations UI, 10 agent brains, playground | Complete |
+| 12 | Scenario QA, Demo Center, quality audit | Complete |
 
 ---
 
@@ -31,7 +33,10 @@
 | Auth & tenants | Yes | Email login, 4 roles, tenant scoping |
 | Dashboard | Yes | Workspace overview |
 | Agent catalog | Yes | 10 templates, deploy UI |
+| All 10 Agent Brains | Yes | GenericBusinessAgent + domain configs |
 | Sales Closing Agent | Yes | Full AI + CRM integration |
+| Demo Center | Yes | `/demo/` control room |
+| Agent Playground | Yes | Scenario presets + quality checks |
 | CRM | Yes | Contacts, leads, pipeline, deals, tasks |
 | Inbox | Yes | Conversations, staff reply, handoff |
 | Web chat | Yes | Demo widget + API |
