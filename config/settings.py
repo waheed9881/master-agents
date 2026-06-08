@@ -11,15 +11,20 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 env = environ.Env(
     DEBUG=(bool, False),
     ALLOWED_HOSTS=(list, ["localhost", "127.0.0.1"]),
+    CSRF_TRUSTED_ORIGINS=(list, []),
     AI_PROVIDER=(str, "mock"),
     INTEGRATIONS_MOCK_MODE=(bool, True),
 )
 
 environ.Env.read_env(BASE_DIR / ".env")
 
-SECRET_KEY = env("SECRET_KEY", default="dev-insecure-key-change-in-production")
+# SECRET_KEY: use SECRET_KEY or DJANGO_SECRET_KEY (CI/deploy tools)
+SECRET_KEY = env("SECRET_KEY", default=None) or env(
+    "DJANGO_SECRET_KEY", default="dev-insecure-key-change-in-production"
+)
 DEBUG = env("DEBUG")
 ALLOWED_HOSTS = env("ALLOWED_HOSTS")
+CSRF_TRUSTED_ORIGINS = env("CSRF_TRUSTED_ORIGINS")
 
 INSTALLED_APPS = [
     "daphne",
@@ -78,12 +83,26 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
 
-DATABASES = {
-    "default": env.db(
+def _database_config():
+    """Support DATABASE_URL or individual DB_* environment variables."""
+    if env.str("DATABASE_URL", default=""):
+        return env.db("DATABASE_URL")
+    if env.str("DB_NAME", default=""):
+        return {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": env("DB_NAME"),
+            "USER": env("DB_USER", default="aiagent"),
+            "PASSWORD": env("DB_PASSWORD", default="aiagent"),
+            "HOST": env("DB_HOST", default="localhost"),
+            "PORT": env("DB_PORT", default="5432"),
+        }
+    return env.db(
         "DATABASE_URL",
         default="postgres://aiagent:aiagent@localhost:5432/ai_agent_os",
     )
-}
+
+
+DATABASES = {"default": _database_config()}
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
@@ -159,3 +178,11 @@ INTEGRATIONS_MOCK_MODE = env("INTEGRATIONS_MOCK_MODE")
 
 if DEBUG:
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+else:
+    # Production/staging hardening (override via env if needed)
+    SECURE_SSL_REDIRECT = env.bool("SECURE_SSL_REDIRECT", default=False)
+    SESSION_COOKIE_SECURE = env.bool("SESSION_COOKIE_SECURE", default=True)
+    CSRF_COOKIE_SECURE = env.bool("CSRF_COOKIE_SECURE", default=True)
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = "DENY"
