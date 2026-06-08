@@ -1,0 +1,106 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}{{ page_title }} — AI Agent OS{% endblock %}
+
+{% block app_content %}
+<div class="flex flex-wrap items-start justify-between gap-4 mb-6">
+    <div>
+        <p class="text-sm text-gray-500">{{ session.demo_version }} &middot; {{ session.get_status_display }}</p>
+        {% if session.audience %}<p class="text-sm text-gray-600">Audience: {{ session.audience }}</p>{% endif %}
+        {% if session.facilitator %}<p class="text-sm text-gray-600">Facilitator: {{ session.facilitator }}</p>{% endif %}
+    </div>
+    <div class="flex flex-wrap gap-2">
+        {% if can_manage %}
+        <a href="{% url 'uat:checklist-add' session_id=session.pk %}" class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50">Add checklist item</a>
+        {% endif %}
+        <a href="{% url 'uat:feedback-create' %}?session={{ session.pk }}" class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50">Add feedback</a>
+    </div>
+</div>
+
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+    {% include "components/stat_card.html" with label="Progress" value=progress.percent hint="Percent tested" %}
+    {% include "components/stat_card.html" with label="Passed" value=progress.passed value_class="text-green-700" %}
+    {% include "components/stat_card.html" with label="Failed" value=progress.failed value_class="text-red-700" %}
+    {% include "components/stat_card.html" with label="Blocked" value=progress.blocked value_class="text-amber-700" %}
+</div>
+
+{% if can_manage and session.status != 'signed_off' %}
+<div class="bg-white rounded-xl border border-gray-200 p-4 mb-6 flex flex-wrap items-center gap-3">
+    <span class="text-sm font-medium text-gray-700">Session actions:</span>
+    {% if session.status != 'completed' and session.status != 'signed_off' %}
+    <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="complete"><button type="submit" class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50">Mark completed</button></form>
+    {% endif %}
+    <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="sign_off"><button type="submit" class="rounded-lg bg-green-600 px-3 py-1.5 text-sm text-white hover:bg-green-700">Sign off MVP</button></form>
+    {% if critical_blocker_count %}
+    <span class="text-xs text-red-600">{{ critical_blocker_count }} critical blocker(s) block sign-off</span>
+    {% endif %}
+</div>
+{% endif %}
+
+{% if session.status == 'signed_off' %}
+<div class="rounded-lg border border-green-200 bg-green-50 p-4 mb-6 text-sm text-green-800">
+  Signed off {{ session.signed_off_at|date:"M j, Y g:i A" }}
+  {% if session.signed_off_by %}by {{ session.signed_off_by.email }}{% endif %}
+</div>
+{% endif %}
+
+{% if session.summary %}
+<div class="bg-white rounded-xl border border-gray-200 p-4 mb-6 text-sm text-gray-700">{{ session.summary }}</div>
+{% endif %}
+
+<div class="space-y-6 mb-8">
+    {% for group in sections %}
+    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="px-4 py-3 border-b border-gray-100 bg-gray-50">
+            <h2 class="text-sm font-semibold text-gray-900">{{ group.section }}</h2>
+        </div>
+        <div class="divide-y divide-gray-100">
+            {% for item in group.items %}
+            <div class="px-4 py-3">
+                <div class="flex flex-wrap items-start justify-between gap-2">
+                    <div class="flex-1 min-w-0">
+                        <p class="font-medium text-gray-900">{{ item.title }}</p>
+                        {% if item.description %}<p class="text-xs text-gray-500 mt-1">{{ item.description }}</p>{% endif %}
+                        {% if item.expected_result %}<p class="text-xs text-gray-600 mt-1"><strong>Expected:</strong> {{ item.expected_result }}</p>{% endif %}
+                        {% if item.notes %}<p class="text-xs text-amber-700 mt-1">Notes: {{ item.notes }}</p>{% endif %}
+                    </div>
+                    <span class="text-xs rounded-full px-2 py-0.5
+                        {% if item.status == 'passed' %}bg-green-100 text-green-700
+                        {% elif item.status == 'failed' %}bg-red-100 text-red-700
+                        {% elif item.status == 'blocked' %}bg-amber-100 text-amber-700
+                        {% else %}bg-gray-100 text-gray-600{% endif %}">{{ item.get_status_display }}</span>
+                </div>
+                {% if can_update_checklist %}
+                <form method="post" class="mt-3 flex flex-wrap items-end gap-2">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="update_checklist">
+                    <input type="hidden" name="item_id" value="{{ item.pk }}">
+                    <select name="status" class="rounded-lg border border-gray-300 px-2 py-1 text-xs">
+                        {% for value, label in checklist_form.fields.status.choices %}
+                        <option value="{{ value }}" {% if item.status == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                    <input type="text" name="notes" value="{{ item.notes }}" placeholder="Notes" class="rounded-lg border border-gray-300 px-2 py-1 text-xs flex-1 min-w-[120px]">
+                    <button type="submit" class="rounded-lg bg-indigo-600 px-2 py-1 text-xs text-white hover:bg-indigo-700">Update</button>
+                </form>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="bg-white rounded-xl border border-gray-200 p-6">
+    <h2 class="text-lg font-semibold text-gray-900 mb-4">Session feedback</h2>
+    {% if feedback %}
+    <ul class="text-sm space-y-2">
+        {% for item in feedback %}
+        <li><a href="{% url 'uat:feedback-edit' item_id=item.pk %}" class="text-indigo-600">{{ item.title }}</a> &mdash; {{ item.get_priority_display }} / {{ item.get_status_display }}</li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="text-sm text-gray-500">No feedback linked to this session yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

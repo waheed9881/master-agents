@@ -35,8 +35,22 @@ def get_demo_report_context(request) -> dict:
         })
 
     deployed_count = 0
+    uat_summary = None
     if tenant:
         deployed_count = selectors.list_tenant_agents(tenant).count()
+        from apps.uat import selectors as uat_selectors
+        from apps.uat.models import UATSessionStatus
+
+        sessions = uat_selectors.sessions_for_tenant(tenant)
+        signed_off = sessions.filter(status=UATSessionStatus.SIGNED_OFF).first()
+        counts = uat_selectors.feedback_counts(tenant)
+        uat_summary = {
+            "session_count": sessions.count(),
+            "signed_off": signed_off.title if signed_off else None,
+            "signed_off_at": signed_off.signed_off_at if signed_off else None,
+            "open_feedback": counts.get("open", 0),
+            "critical_blockers": counts.get("critical", 0),
+        }
 
     return {
         "page_title": "Demo Report",
@@ -86,6 +100,7 @@ def get_demo_report_context(request) -> dict:
             "No APM or error monitoring service",
             "Demo account password must be changed before public demo",
         ],
+        "uat_summary": uat_summary,
         "recommended_next_steps": [
             "Deploy to staging with DEBUG=False and strong SECRET_KEY",
             "Set CREDENTIALS_ENCRYPTION_KEY and change demo password",

@@ -2,8 +2,8 @@
 
 **Project:** AI Agent OS  
 **Report date:** June 2026  
-**Release:** MVP 1.7 (Phase 17 — UI/UX and Demo Packaging)  
-**Verdict:** Accepted for polished local client/internal demo with launch scripts and demo report
+**Release:** MVP 1.8 (Phase 18 — UAT, Feedback, and Sign-off)  
+**Verdict:** Accepted for polished local client/internal demo with UAT tracking, feedback export, and sign-off workflow
 
 ---
 
@@ -28,6 +28,19 @@
 | 15 | Workspace settings, team roles, plans, usage, onboarding, demo reset | Complete |
 | 16 | Fernet encryption, rate limits, audit logs, security dashboard, backups | Complete |
 | 17 | UI polish, Demo Center, demo report, Windows launch scripts | Complete |
+| 18 | UAT sessions, feedback tracker, sign-off report, CSV export | Complete |
+
+---
+
+## Phase 18 UAT and Feedback
+
+| Asset | Path |
+|-------|------|
+| UAT dashboard | `/uat/` |
+| Feedback board | `/uat/feedback/` |
+| UAT sign-off report | `/uat/report/` |
+| UAT guide | `docs/UAT_GUIDE.md` |
+| Seed checklist | `scripts/seed_uat_checklist.py` |
 
 ---
 

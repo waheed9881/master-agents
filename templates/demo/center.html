@@ -12,6 +12,29 @@
     {% include "components/stat_card.html" with label="Product" value=product_version %}
 </div>
 
+<div class="bg-white rounded-xl border border-gray-200 p-6 mb-8">
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+        <h2 class="text-lg font-semibold text-gray-900">UAT and feedback</h2>
+        <a href="{% url 'uat:dashboard' %}" class="text-sm text-indigo-600 font-medium">UAT dashboard &rarr;</a>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+        {% include "components/stat_card.html" with label="Active UAT sessions" value=uat_active_sessions %}
+        {% include "components/stat_card.html" with label="Open feedback" value=uat_open_feedback %}
+        {% include "components/stat_card.html" with label="Critical blockers" value=uat_critical value_class="text-red-700" %}
+    </div>
+    <p class="text-sm text-gray-600 mb-3">
+        {% if uat_signed_off %}
+        <span class="text-green-700 font-medium">Signed off:</span> {{ uat_signed_off.title }}
+        {% else %}
+        No MVP sign-off yet. Run checklist during demo and capture feedback.
+        {% endif %}
+    </p>
+    <div class="flex flex-wrap gap-2">
+        <a href="{% url 'uat:feedback-create' %}?module=demo&url=/demo/" class="rounded-lg border border-gray-200 px-4 py-2 text-sm hover:bg-gray-50">Report feedback</a>
+        <a href="{% url 'uat:report' %}" class="rounded-lg border border-gray-200 px-4 py-2 text-sm hover:bg-gray-50">UAT report (print)</a>
+    </div>
+</div>
+
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
     {% include "components/stat_card.html" with label="AI provider" value=ai_provider_label value_class="text-amber-700" hint=ai_provider_hint %}
     {% include "components/stat_card.html" with label="Integrations" value=integrations_label value_class="text-amber-700" %}

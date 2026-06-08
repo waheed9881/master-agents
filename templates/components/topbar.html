@@ -17,6 +17,10 @@
                 <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
                 Local
             </span>
+            <a href="{% url 'uat:feedback-create' %}?module={{ active_nav|default:'general' }}&url={{ request.path }}"
+               class="hidden sm:inline-flex items-center rounded-lg border border-gray-300 px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50">
+                Report Feedback
+            </a>
         </div>
     </div>
 </header>

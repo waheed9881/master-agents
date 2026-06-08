@@ -22,6 +22,7 @@ urlpatterns = [
     path("analytics/", include("apps.analytics.urls")),
     path("integrations/", include("apps.integrations.urls")),
     path("demo/", include("apps.demo.urls")),
+    path("uat/", include("apps.uat.urls")),
     path("settings/", include(("apps.tenants.settings_urls", "settings"), namespace="settings")),
     path("settings/", include(("apps.agent_engine.settings_urls", "agent_engine_settings"), namespace="agent_engine_settings")),
     path("api/", include("apps.accounts.api_urls")),

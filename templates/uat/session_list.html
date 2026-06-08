@@ -1,0 +1,41 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}{{ page_title }} — AI Agent OS{% endblock %}
+
+{% block app_content %}
+<div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+    <p class="text-sm text-gray-500">All UAT demo sessions for this workspace.</p>
+    <a href="{% url 'uat:session-create' %}" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">New session</a>
+</div>
+
+<div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+    <table class="min-w-full text-sm divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+            <tr>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Title</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Version</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Audience</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+            {% for session in sessions %}
+            <tr class="hover:bg-gray-50">
+                <td class="px-4 py-3"><a href="{% url 'uat:session-detail' session_id=session.pk %}" class="font-medium text-indigo-600">{{ session.title }}</a></td>
+                <td class="px-4 py-3">{{ session.demo_version }}</td>
+                <td class="px-4 py-3">{{ session.get_status_display }}</td>
+                <td class="px-4 py-3">{{ session.audience|default:"-" }}</td>
+                <td class="px-4 py-3 text-gray-500">{{ session.created_at|date:"M j, Y" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="px-4 py-6">
+                    {% include "components/empty_state.html" with title="No UAT sessions" message="Create your first session to track demo checklist items." cta_url="/uat/sessions/new/" cta_text="New session" %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

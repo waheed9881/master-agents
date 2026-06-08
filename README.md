@@ -2,7 +2,7 @@
 
 Production-minded SaaS platform for business AI agents. Modular monolith architecture with a shared agent engine and pluggable agent modules.
 
-**MVP Status:** Phases 1-17 complete. **Local demo-ready** — polished dashboard, Demo Center, printable demo report, one-click Windows launch scripts, 10 agent brains, security hardening, 287 tests, 60/0/0 scenario QA. Not approved for public production without HTTPS, monitoring, and scheduled backups (see limitations below).
+**MVP Status:** Phases 1-18 complete. **Local demo-ready** — polished dashboard, Demo Center, UAT/feedback tracker, printable demo and sign-off reports, one-click Windows launch scripts, 10 agent brains, security hardening, 313 tests, 60/0/0 scenario QA. Not approved for public production without HTTPS, monitoring, and scheduled backups (see limitations below).
 
 ## Product Overview
 
@@ -112,6 +112,7 @@ apps/
   agent_engine/  # Shared AI orchestration
   agent_modules/ # Agent-specific business logic
   analytics/     # Reporting and dashboards
+  uat/           # UAT sessions, checklist, feedback tracker
 templates/       # Django templates (HTMX + Alpine + Tailwind)
 scripts/         # Seed, audit, and validation scripts
 tests/           # pytest test suite
@@ -136,6 +137,7 @@ docs/            # Architecture, deployment, and runbook docs
 | [MVP Acceptance](docs/FINAL_MVP_ACCEPTANCE_REPORT.md) | Final acceptance report |
 | [Security](docs/SECURITY.md) | Secrets, webhooks, hardening |
 | [QA Checklist](docs/QA_CHECKLIST.md) | Manual acceptance tests |
+| [UAT Guide](docs/UAT_GUIDE.md) | Demo UAT sessions, feedback, sign-off |
 | [Runbook](docs/RUNBOOK.md) | Operational commands |
 | [Troubleshooting](docs/TROUBLESHOOTING.md) | Common errors and fixes |
 | [Release Notes](docs/RELEASE_NOTES.md) | Phase 1-10 summary |

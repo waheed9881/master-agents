@@ -1,0 +1,109 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}{{ page_title }} — AI Agent OS{% endblock %}
+
+{% block extra_head %}
+<style>
+@media print {
+    .no-print { display: none !important; }
+    .print-report { box-shadow: none !important; border: none !important; }
+    body { background: white !important; }
+    main { padding: 0 !important; }
+}
+</style>
+{% endblock %}
+
+{% block app_content %}
+<div class="no-print mb-6 flex flex-wrap items-center justify-between gap-4">
+    <p class="text-sm text-gray-500">Print-friendly UAT sign-off pack for stakeholders</p>
+    <div class="flex gap-2">
+        <button onclick="window.print()" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">Print / Save as PDF</button>
+        <a href="{% url 'uat:dashboard' %}" class="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">UAT dashboard</a>
+    </div>
+</div>
+
+<article class="print-report bg-white rounded-xl border border-gray-200 p-8 max-w-4xl mx-auto">
+    <header class="border-b border-gray-200 pb-6 mb-6">
+        <p class="text-sm text-gray-500">{{ product_version }} — UAT Sign-off Report</p>
+        <h1 class="text-3xl font-bold text-gray-900 mt-1">MVP Acceptance Summary</h1>
+        <p class="text-sm text-gray-500 mt-2">Scenario audit: {{ scenario_audit }} passed</p>
+    </header>
+
+    <section class="mb-8">
+        <h2 class="text-lg font-semibold text-gray-900 mb-3">Session summary</h2>
+        {% if sessions %}
+        <table class="min-w-full text-sm border border-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="text-left px-3 py-2 border-b">Session</th>
+                    <th class="text-left px-3 py-2 border-b">Status</th>
+                    <th class="text-left px-3 py-2 border-b">Progress</th>
+                    <th class="text-left px-3 py-2 border-b">Passed</th>
+                    <th class="text-left px-3 py-2 border-b">Failed</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in sessions %}
+                <tr>
+                    <td class="px-3 py-2 border-b">{{ row.session.title }}</td>
+                    <td class="px-3 py-2 border-b">{{ row.session.get_status_display }}</td>
+                    <td class="px-3 py-2 border-b">{{ row.progress.percent }}%</td>
+                    <td class="px-3 py-2 border-b text-green-700">{{ row.progress.passed }}</td>
+                    <td class="px-3 py-2 border-b text-red-700">{{ row.progress.failed }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <p class="text-xs text-gray-500 mt-2">Signed-off sessions: {{ signed_off_count }}</p>
+        {% else %}
+        <p class="text-sm text-gray-600">No UAT sessions recorded.</p>
+        {% endif %}
+    </section>
+
+    <section class="mb-8">
+        <h2 class="text-lg font-semibold text-gray-900 mb-3">Open critical blockers</h2>
+        {% if open_blockers %}
+        <ul class="list-disc list-inside text-sm text-red-700 space-y-1">
+            {% for item in open_blockers %}
+            <li>{{ item.title }} ({{ item.module_area }})</li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-sm text-green-700">No critical open blockers.</p>
+        {% endif %}
+    </section>
+
+    <section class="mb-8">
+        <h2 class="text-lg font-semibold text-gray-900 mb-3">Accepted MVP scope</h2>
+        <ul class="list-disc list-inside text-sm text-gray-700 space-y-1">
+            <li>Local secure SaaS with multi-tenant isolation</li>
+            <li>10 Brain Active AI agents with mock provider</li>
+            <li>CRM, inbox, knowledge, analytics, settings</li>
+            <li>Mock WhatsApp/Instagram integrations</li>
+            <li>Security dashboard, audit logs, demo tools</li>
+        </ul>
+        <p class="text-xs text-gray-500 mt-2">Open feedback items: {{ feedback_open }}</p>
+    </section>
+
+    <section class="mb-8">
+        <h2 class="text-lg font-semibold text-gray-900 mb-3">Production blockers (deferred)</h2>
+        <ul class="list-disc list-inside text-sm text-gray-700 space-y-1">
+            <li>Production hosting and HTTPS</li>
+            <li>Live Meta OAuth and WhatsApp Business API</li>
+            <li>Payment gateway and live billing</li>
+            <li>Live LLM provider (optional for pilot)</li>
+            <li>Automated backups and APM monitoring</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2 class="text-lg font-semibold text-gray-900 mb-3">Recommended next steps</h2>
+        <ol class="list-decimal list-inside text-sm text-gray-700 space-y-1">
+            <li>Resolve critical and high-priority feedback from UAT export</li>
+            <li>Deploy staging with DEBUG=False and encryption key</li>
+            <li>Configure live AI provider if required for pilot</li>
+            <li>Plan production integrations and billing phase</li>
+        </ol>
+    </section>
+</article>
+{% endblock %}

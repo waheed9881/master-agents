@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     "apps.knowledge",
     "apps.agent_engine",
     "apps.analytics",
+    "apps.uat",
 ]
 
 MIDDLEWARE = [

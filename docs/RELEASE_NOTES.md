@@ -181,6 +181,18 @@
 - Analytics shows runs by provider, fallback count, token/cost totals
 - `AUDIT_AI_PROVIDER=mock` keeps scenario audit deterministic
 
+## Phase 18 — UAT, Feedback Tracker, and Sign-off Pack
+
+- New `apps/uat/` app: sessions, checklist items, feedback items
+- UAT dashboard at `/uat/` with active sessions and blocker counts
+- Default MVP checklist (16 sections) seeded via `scripts/seed_uat_checklist.py`
+- Feedback board with filters, CSV export, and top-bar **Report Feedback** link
+- Printable UAT sign-off report at `/uat/report/`
+- Sign-off blocked when critical open feedback exists
+- Demo Center integration with UAT status card
+- Docs: `docs/UAT_GUIDE.md`
+- 313 tests passing; scenario audit 60/0/0
+
 ## Phase 17 — UI/UX Polish and Demo Packaging
 
 - Polished executive dashboard with quick actions and security summary
@@ -201,7 +213,7 @@
 - `python manage.py security_audit` command
 - Backup scripts: `local_backup.py`, `local_restore.py`, `validate_backup.py`
 - Tenant isolation audit: `scripts/audit_tenant_isolation.py`
-- 287 tests passing; scenario audit 60/0/0
+- 311 tests passing; scenario audit 60/0/0
 
 ## Known Limitations
 

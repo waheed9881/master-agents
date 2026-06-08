@@ -61,6 +61,19 @@ Mark each item PASS / FAIL / N/A. All core items should PASS before client demo.
 - [ ] `/onboarding/` wizard loads
 - [ ] `python manage.py reset_demo_data --safe` works
 
+## UAT and Feedback (Phase 18)
+
+- [ ] `/uat/` dashboard loads for owner/admin/manager
+- [ ] `/uat/sessions/new/` creates session with default checklist
+- [ ] Checklist items can be marked passed/failed on session detail
+- [ ] `/uat/feedback/new/` creates feedback (top bar link works)
+- [ ] `/uat/feedback/export.csv` downloads CSV for manager+
+- [ ] `/uat/report/` loads with Print button
+- [ ] Critical blocker prevents session sign-off
+- [ ] `/demo/` shows UAT status card and links
+- [ ] `python scripts/seed_uat_checklist.py` is idempotent
+- [ ] `docs/UAT_GUIDE.md` exists
+
 ## UI and Demo Packaging (Phase 17)
 
 - [ ] `/dashboard/` shows executive overview and quick actions

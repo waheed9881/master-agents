@@ -9,8 +9,9 @@ Step-by-step scripts for presenting AI Agent OS locally. All URLs assume `http:/
 ## Before you start
 
 1. Run `run_local_demo.bat` or `run_local_demo.ps1`
-2. Open Demo Report: `/demo/report/` (optional print/PDF)
-3. Confirm mock badges in top bar: **Mock AI**, **Mock Meta**, **Local**
+2. Open UAT session: `/uat/` (or seed with `python scripts/seed_uat_checklist.py`)
+3. Open Demo Report: `/demo/report/` (optional print/PDF)
+4. Confirm mock badges in top bar: **Mock AI**, **Mock Meta**, **Local**, **Report Feedback**
 
 ---
 
@@ -51,7 +52,8 @@ Complete the 15-minute flow, then add:
 | 18-21 | Second agent | `/agents/` | Open clinic or real estate playground |
 | 21-24 | Settings | `/settings/` | Workspace, team roles, plan limits |
 | 24-27 | Security | `/settings/security/` | Encryption, rate limits, audit trail |
-| 27-30 | Demo Center | `/demo/` | Quality score 60/60, mock vs real explanation |
+| 27-29 | Demo Center | `/demo/` | Quality score 60/60, UAT status, mock vs real |
+| 29-30 | UAT wrap-up | `/uat/sessions/` | Mark checklist passed/failed; capture feedback via top bar |
 
 ### Second agent sample (clinic)
 
@@ -67,7 +69,8 @@ I need to book an appointment for a dental cleaning next week.
 - CRM, inbox, knowledge, and analytics are production-pattern modules
 - Mock AI gives deterministic demo-safe responses
 - Security hardening: encryption, rate limits, audit logs (Phase 16)
-- 287 automated tests, 60/60 scenario QA pass
+- 313 automated tests, 60/60 scenario QA pass
+- UAT checklist and feedback tracker for stakeholder sign-off
 
 ## What NOT to claim
 
@@ -92,4 +95,6 @@ I need to book an appointment for a dental cleaning next week.
 
 ## Print handout
 
-Open `/demo/report/` and use **Print / Save as PDF** for a one-page summary.
+Open `/demo/report/` and `/uat/report/` and use **Print / Save as PDF** for stakeholder handouts.
+
+See `docs/UAT_GUIDE.md` for sign-off rules and CSV export.

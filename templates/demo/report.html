@@ -98,6 +98,22 @@
         </div>
     </section>
 
+    {% if uat_summary %}
+    <section class="mb-8">
+        <h2 class="text-lg font-semibold text-gray-900 mb-3">UAT status</h2>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm mb-3">
+            <div class="rounded-lg bg-gray-50 p-4"><p class="text-gray-500">UAT sessions</p><p class="text-xl font-bold">{{ uat_summary.session_count }}</p></div>
+            <div class="rounded-lg bg-gray-50 p-4"><p class="text-gray-500">Open feedback</p><p class="text-xl font-bold">{{ uat_summary.open_feedback }}</p></div>
+            <div class="rounded-lg bg-gray-50 p-4"><p class="text-gray-500">Critical blockers</p><p class="text-xl font-bold text-red-700">{{ uat_summary.critical_blockers }}</p></div>
+            <div class="rounded-lg bg-gray-50 p-4"><p class="text-gray-500">Sign-off</p><p class="text-xl font-bold {% if uat_summary.signed_off %}text-green-700{% endif %}">{% if uat_summary.signed_off %}Yes{% else %}Pending{% endif %}</p></div>
+        </div>
+        {% if uat_summary.signed_off %}
+        <p class="text-sm text-gray-600">Signed off: {{ uat_summary.signed_off }}{% if uat_summary.signed_off_at %} ({{ uat_summary.signed_off_at|date:"M j, Y" }}){% endif %}</p>
+        {% endif %}
+        <p class="text-xs text-gray-500 mt-2">Full report: /uat/report/</p>
+    </section>
+    {% endif %}
+
     <section class="mb-8">
         <h2 class="text-lg font-semibold text-gray-900 mb-3">Production limitations</h2>
         <ul class="list-disc list-inside text-sm text-gray-700 space-y-1">

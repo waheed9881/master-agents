@@ -16,6 +16,8 @@ from apps.agent_modules.registry import list_implemented_slugs
 from apps.agents import selectors
 from apps.analytics.selectors import get_agent_engine_counts, DEFAULT_RANGE
 from apps.demo.report_data import get_demo_report_context
+from apps.uat import selectors as uat_selectors
+from apps.uat.models import UATSessionStatus
 
 
 @login_required
@@ -38,6 +40,10 @@ def demo_center_view(request):
     implemented_count = len(list_implemented_slugs())
     provider_status = get_provider_status()
     agent_engine_stats = get_agent_engine_counts(request.tenant, DEFAULT_RANGE)
+
+    uat_sessions = uat_selectors.sessions_for_tenant(request.tenant)
+    signed_off = uat_sessions.filter(status=UATSessionStatus.SIGNED_OFF).first()
+    uat_feedback = uat_selectors.feedback_counts(request.tenant, request.user)
 
     return render(
         request,
@@ -65,6 +71,10 @@ def demo_center_view(request):
             "integrations_label": "Mock mode" if getattr(settings, "INTEGRATIONS_MOCK_MODE", True) else "Live mode",
             "cost_hint": f"Est. cost: ${float(agent_engine_stats.get('estimated_cost', 0) or 0):.4f}",
             "ai_provider_hint": f"Fallback: {provider_status['fallback_provider']}",
+            "uat_signed_off": signed_off,
+            "uat_open_feedback": uat_feedback.get("open", 0),
+            "uat_critical": uat_feedback.get("critical", 0),
+            "uat_active_sessions": uat_selectors.active_sessions(request.tenant).count(),
         },
     )
 

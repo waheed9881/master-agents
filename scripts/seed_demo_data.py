@@ -160,6 +160,13 @@ def seed():
     spec.loader.exec_module(seed_p11_mod)
     seed_p11_mod.seed_phase11_for_tenant(tenant)
 
+    # Seed default UAT session and checklist
+    uat_path = Path(__file__).parent / "seed_uat_checklist.py"
+    spec = importlib.util.spec_from_file_location("seed_uat_checklist", uat_path)
+    seed_uat_mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(seed_uat_mod)
+    seed_uat_mod.seed_uat_for_tenant(tenant, created_by=user)
+
     print("\nDemo login:")
     print("  Email: admin@example.com")
     print("  Password: Admin123!")
