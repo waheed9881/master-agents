@@ -4,11 +4,18 @@ from django.http import Http404
 from django.shortcuts import render
 
 from apps.agent_engine.demo_scenarios import scenario_count_by_slug
-from apps.agent_engine.qa_status import DOCUMENTED_TEST_COUNT, PHASE_LABEL, SCENARIO_COUNT
+from apps.agent_engine.qa_status import (
+    DOCUMENTED_TEST_COUNT,
+    PHASE_LABEL,
+    PRODUCT_VERSION,
+    SCENARIO_AUDIT_PASSED,
+    SCENARIO_COUNT,
+)
 from apps.agent_engine.services.provider_settings import get_provider_status
 from apps.agent_modules.registry import list_implemented_slugs
 from apps.agents import selectors
 from apps.analytics.selectors import get_agent_engine_counts, DEFAULT_RANGE
+from apps.demo.report_data import get_demo_report_context
 
 
 @login_required
@@ -48,7 +55,24 @@ def demo_center_view(request):
             "integrations_mock": getattr(settings, "INTEGRATIONS_MOCK_MODE", True),
             "documented_test_count": DOCUMENTED_TEST_COUNT,
             "phase_label": PHASE_LABEL,
+            "product_version": PRODUCT_VERSION,
             "scenario_count": SCENARIO_COUNT,
-            "quality_audit_target": "60 passed / 0 warnings / 0 failed",
+            "scenario_audit_passed": SCENARIO_AUDIT_PASSED,
+            "quality_audit_target": f"{SCENARIO_AUDIT_PASSED} passed / 0 warnings / 0 failed",
+            "first_agent": agents.first(),
+            "brains_display": f"{implemented_count}/10",
+            "ai_provider_label": "Mock (local)" if getattr(settings, "AI_PROVIDER", "mock") == "mock" else provider_status["provider"].title(),
+            "integrations_label": "Mock mode" if getattr(settings, "INTEGRATIONS_MOCK_MODE", True) else "Live mode",
+            "cost_hint": f"Est. cost: ${float(agent_engine_stats.get('estimated_cost', 0) or 0):.4f}",
+            "ai_provider_hint": f"Fallback: {provider_status['fallback_provider']}",
         },
     )
+
+
+@login_required
+def demo_report_view(request):
+    """Printable local demo report for client presentations."""
+    if not request.tenant:
+        raise Http404("No tenant")
+    context = get_demo_report_context(request)
+    return render(request, "demo/report.html", context)

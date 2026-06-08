@@ -2,7 +2,7 @@
 
 Production-minded SaaS platform for business AI agents. Modular monolith architecture with a shared agent engine and pluggable agent modules.
 
-**MVP Status:** Phases 1-16 complete. **Local demo-ready** — Fernet credential encryption, rate limiting, audit logs, security dashboard, backup scripts, tenant isolation audit, workspace settings, team roles, plan limits, 10 agent brains, 60/0/0 scenario QA. Not approved for public production without HTTPS, monitoring, and scheduled backups (see limitations below).
+**MVP Status:** Phases 1-17 complete. **Local demo-ready** — polished dashboard, Demo Center, printable demo report, one-click Windows launch scripts, 10 agent brains, security hardening, 287 tests, 60/0/0 scenario QA. Not approved for public production without HTTPS, monitoring, and scheduled backups (see limitations below).
 
 ## Product Overview
 
@@ -76,6 +76,10 @@ python scripts/check_environment.py
 python manage.py check_deploy_ready
 python manage.py security_audit
 python manage.py generate_credentials_key
+
+# One-click local demo (Windows)
+run_local_demo.bat
+run_local_checks.bat
 
 # Security and isolation audits
 python scripts/audit_tenant_isolation.py
@@ -177,6 +181,7 @@ Full reference: [docs/API_ENDPOINTS.md](docs/API_ENDPOINTS.md)
 | 10 | Complete | Release freeze, audit, staging DevOps |
 | 11-15 | Complete | Integrations UI, agent brains, Demo Center, AI providers, SaaS productization |
 | 16 | Complete | Security hardening, encryption, rate limits, audit logs, backups |
+| 17 | Complete | UI/UX polish, Demo Center, demo report, launch scripts |
 
 ## Staging Deployment
 

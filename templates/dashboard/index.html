@@ -3,94 +3,116 @@
 {% block title %}Dashboard — AI Agent OS{% endblock %}
 
 {% block app_content %}
-<!-- Welcome banner -->
-<div class="rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 p-6 mb-8 text-white">
-    <h2 class="text-2xl font-bold mb-1">Welcome, {{ request.user.full_name }}!</h2>
-    <p class="text-indigo-100">
-        {% if current_tenant %}
-        Managing <strong>{{ current_tenant.name }}</strong> workspace
-        {% else %}
-        Set up your workspace to get started
-        {% endif %}
-    </p>
+<div class="rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 p-6 mb-6 text-white">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div>
+            <p class="text-indigo-200 text-sm mb-1">{{ product_version }} — Local secure SaaS MVP</p>
+            <h2 class="text-2xl font-bold mb-1">Welcome, {{ request.user.full_name }}</h2>
+            <p class="text-indigo-100">
+                {% if current_tenant %}
+                Executive overview for <strong>{{ current_tenant.name }}</strong>
+                {% else %}
+                Set up your workspace to get started
+                {% endif %}
+            </p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+            <a href="{% url 'demo:center' %}" class="rounded-lg bg-white/15 hover:bg-white/25 px-4 py-2 text-sm font-medium">Demo Center</a>
+            <a href="{% url 'demo:report' %}" class="rounded-lg bg-white px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-50">Demo Report</a>
+        </div>
+    </div>
 </div>
 
-<!-- Stats cards -->
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+    <div class="bg-white rounded-xl border border-gray-200 p-5 sm:col-span-2 xl:col-span-1">
+        <p class="text-xs text-gray-500 uppercase tracking-wide mb-2">Product status</p>
+        <p class="text-lg font-bold text-green-700">Demo ready</p>
+        <p class="text-sm text-gray-600 mt-1">Scenario QA: {{ scenario_audit }} passed</p>
+        <p class="text-xs text-gray-500 mt-2">Security: {{ security_summary.status }}{% if security_summary.blocker_count %} ({{ security_summary.blocker_count }} blockers){% endif %}</p>
+    </div>
+    {% include "components/stat_card.html" with label="Active agents" value=stats.agent_count value_class="text-indigo-600" link_url="/agents/" link_text="Agent gallery" %}
+    {% include "components/stat_card.html" with label="Hot leads (30d)" value=stats.hot_leads value_class="text-orange-600" link_url="/crm/leads/?status=hot" link_text="View hot leads" %}
+    {% include "components/stat_card.html" with label="Conversations (30d)" value=stats.conversations hint=stats.conversations_today_hint link_url="/inbox/" link_text="Open inbox" %}
+</div>
+
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-    <div class="bg-white rounded-xl border border-gray-200 p-5">
-        <p class="text-sm text-gray-500 mb-1">Total Leads</p>
-        <p class="text-3xl font-bold text-gray-900">{{ stats.total_leads }}</p>
-        <a href="{% url 'crm:leads' %}" class="text-xs text-indigo-600 hover:underline mt-1 inline-block">View CRM →</a>
+    {% include "components/stat_card.html" with label="AI runs (30d)" value=stats.total_agent_runs link_url="/analytics/" link_text="Analytics" %}
+    {% include "components/stat_card.html" with label="AI messages (30d)" value=stats.ai_messages_sent %}
+    {% include "components/stat_card.html" with label="Tokens (30d)" value=stats.total_tokens %}
+    {% include "components/stat_card.html" with label="Est. cost (30d)" value=stats.estimated_cost hint="Mock provider = $0" %}
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+    <div class="lg:col-span-2 bg-white rounded-xl border border-gray-200 p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick actions</h3>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <a href="{% url 'demo:center' %}" class="rounded-lg border border-gray-200 p-4 hover:border-indigo-300 hover:bg-indigo-50/50 transition text-sm font-medium text-gray-800">Open Demo Center</a>
+            {% if first_agent %}
+            <a href="{% url 'agents:playground' agent_id=first_agent.pk %}" class="rounded-lg border border-gray-200 p-4 hover:border-indigo-300 hover:bg-indigo-50/50 transition text-sm font-medium text-gray-800">Test Agent</a>
+            {% else %}
+            <a href="{% url 'agents:gallery' %}" class="rounded-lg border border-gray-200 p-4 hover:border-indigo-300 hover:bg-indigo-50/50 transition text-sm font-medium text-gray-800">Deploy Agent</a>
+            {% endif %}
+            <a href="{% url 'knowledge:list' %}" class="rounded-lg border border-gray-200 p-4 hover:border-indigo-300 hover:bg-indigo-50/50 transition text-sm font-medium text-gray-800">Add Knowledge</a>
+            <a href="{% url 'integrations:index' %}" class="rounded-lg border border-gray-200 p-4 hover:border-indigo-300 hover:bg-indigo-50/50 transition text-sm font-medium text-gray-800">Configure Integration</a>
+            <a href="{% url 'analytics:dashboard' %}" class="rounded-lg border border-gray-200 p-4 hover:border-indigo-300 hover:bg-indigo-50/50 transition text-sm font-medium text-gray-800">View Analytics</a>
+            <a href="{% url 'settings:security' %}" class="rounded-lg border border-gray-200 p-4 hover:border-indigo-300 hover:bg-indigo-50/50 transition text-sm font-medium text-gray-800">Security dashboard</a>
+        </div>
     </div>
-    <div class="bg-white rounded-xl border border-gray-200 p-5">
-        <p class="text-sm text-gray-500 mb-1">Hot Leads</p>
-        <p class="text-3xl font-bold text-orange-600">{{ stats.hot_leads }}</p>
-        <a href="{% url 'crm:leads' %}?status=hot" class="text-xs text-indigo-600 hover:underline mt-1 inline-block">View hot →</a>
-    </div>
-    <div class="bg-white rounded-xl border border-gray-200 p-5">
-        <p class="text-sm text-gray-500 mb-1">AI Agents</p>
-        <p class="text-3xl font-bold text-indigo-600">{{ stats.agent_count }}</p>
-        <a href="{% url 'agents:gallery' %}" class="text-xs text-indigo-600 hover:underline mt-1 inline-block">View agents →</a>
-    </div>
-    <div class="bg-white rounded-xl border border-gray-200 p-5">
-        <p class="text-sm text-gray-500 mb-1">Conversations</p>
-        <p class="text-3xl font-bold text-gray-900">{{ stats.conversations }}</p>
-        <a href="{% url 'inbox:list' %}" class="text-xs text-indigo-600 hover:underline mt-1 inline-block">Open inbox →</a>
+    <div class="bg-white rounded-xl border border-gray-200 p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Security summary</h3>
+        <ul class="text-sm space-y-2 text-gray-600">
+            <li>Status: <span class="font-medium text-gray-900">{{ security_summary.status }}</span></li>
+            <li>AI provider: {% if security_summary.mock_ai %}Mock (demo){% else %}Live{% endif %}</li>
+            <li>Integrations: {% if security_summary.integrations_mock %}Mock mode{% else %}Live mode{% endif %}</li>
+        </ul>
+        <a href="{% url 'settings:security' %}" class="text-sm text-indigo-600 hover:text-indigo-800 mt-4 inline-block">View security details &rarr;</a>
     </div>
 </div>
 
-<div class="mb-8 text-right">
-    <a href="{% url 'analytics:dashboard' %}" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium">
-        View full analytics dashboard
-    </a>
-</div>
-
-<!-- Quick start -->
-<div class="bg-white rounded-xl border border-gray-200 p-6">
-    <h3 class="text-lg font-semibold text-gray-900 mb-4">Getting Started</h3>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="rounded-lg border border-dashed border-green-300 bg-green-50/50 p-4 text-center">
-            <div class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center mx-auto mb-3 text-sm font-bold">✓</div>
-            <p class="font-medium text-gray-900">Phase 1: Auth & Dashboard</p>
-            <p class="text-sm text-gray-500 mt-1">Complete</p>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+            <h3 class="font-semibold text-gray-900">Latest conversations</h3>
+            <a href="{% url 'inbox:list' %}" class="text-sm text-indigo-600">View all</a>
         </div>
-        <div class="rounded-lg border border-dashed border-green-300 bg-green-50/50 p-4 text-center">
-            <div class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center mx-auto mb-3 text-sm font-bold">✓</div>
-            <p class="font-medium text-gray-900">Phase 2: Agent Templates</p>
-            <p class="text-sm text-gray-500 mt-1">10 agent cards ready</p>
+        {% if recent_conversations %}
+        <ul class="divide-y divide-gray-100">
+            {% for conv in recent_conversations %}
+            <li>
+                <a href="{% url 'inbox:detail' conversation_id=conv.id %}" class="flex items-center justify-between px-6 py-3 hover:bg-gray-50 text-sm">
+                    <span class="font-medium text-gray-900">{{ conv.contact_name }}</span>
+                    <span class="text-gray-500">{{ conv.channel_type }}</span>
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <div class="p-6">
+            {% include "components/empty_state.html" with title="No conversations yet" message="Start from the web chat demo or agent playground." cta_url="/inbox/webchat/" cta_text="Open web chat" %}
         </div>
-        <div class="rounded-lg border border-dashed border-green-300 bg-green-50/50 p-4 text-center">
-            <div class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center mx-auto mb-3 text-sm font-bold">✓</div>
-            <p class="font-medium text-gray-900">Phase 3: CRM</p>
-            <p class="text-sm text-gray-500 mt-1">Leads, pipeline, tasks</p>
-        </div>
-        <div class="rounded-lg border border-dashed border-green-300 bg-green-50/50 p-4 text-center">
-            <div class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center mx-auto mb-3 text-sm font-bold">✓</div>
-            <p class="font-medium text-gray-900">Phase 4: Inbox & Web Chat</p>
-            <p class="text-sm text-gray-500 mt-1">Unified messaging ready</p>
-        </div>
-        <div class="rounded-lg border border-dashed border-green-300 bg-green-50/50 p-4 text-center">
-            <div class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center mx-auto mb-3 text-sm font-bold">✓</div>
-            <p class="font-medium text-gray-900">Phase 5: Sales Agent Engine</p>
-            <p class="text-sm text-gray-500 mt-1">AI + CRM auto-update</p>
-        </div>
-        <div class="rounded-lg border border-dashed border-green-300 bg-green-50/50 p-4 text-center">
-            <div class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center mx-auto mb-3 text-sm font-bold">&#10003;</div>
-            <p class="font-medium text-gray-900">Phase 6: Knowledge Base</p>
-            <p class="text-sm text-gray-500 mt-1">FAQs, pricing, search</p>
-        </div>
-        <div class="rounded-lg border border-dashed border-green-300 bg-green-50/50 p-4 text-center">
-            <div class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center mx-auto mb-3 text-sm font-bold">&#10003;</div>
-            <p class="font-medium text-gray-900">Phase 7: Analytics</p>
-            <p class="text-sm text-gray-500 mt-1">KPIs, funnel, performance</p>
-        </div>
+        {% endif %}
     </div>
-    <div class="mt-6 text-center">
-        <a href="{% url 'agents:gallery' %}"
-           class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-white font-semibold hover:bg-indigo-700 transition">
-            Browse AI Agents
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-        </a>
+    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+            <h3 class="font-semibold text-gray-900">Latest leads</h3>
+            <a href="{% url 'crm:leads' %}" class="text-sm text-indigo-600">View all</a>
+        </div>
+        {% if recent_leads %}
+        <ul class="divide-y divide-gray-100">
+            {% for lead in recent_leads %}
+            <li>
+                <a href="{% url 'crm:lead_detail' lead_id=lead.id %}" class="flex items-center justify-between px-6 py-3 hover:bg-gray-50 text-sm">
+                    <span class="font-medium text-gray-900 truncate">{{ lead.title }}</span>
+                    <span class="text-gray-500 shrink-0 ml-2">{{ lead.status }}</span>
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <div class="p-6">
+            {% include "components/empty_state.html" with title="No leads yet" message="Run a playground scenario or web chat to create CRM leads automatically." cta_url="/agents/" cta_text="Browse agents" %}
+        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

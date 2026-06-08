@@ -1,4 +1,5 @@
 from django import forms
+from django.db.models import Count
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import Http404, HttpResponseForbidden
@@ -10,7 +11,11 @@ from apps.tenants.plan_limits import check_agent_limit
 from apps.agent_engine.demo_scenarios import get_scenario_by_id, get_scenarios_for_slug
 from apps.agent_engine.services.scenario_runner import run_scenario
 from apps.agent_modules.registry import is_agent_implemented
+from collections import defaultdict
+
+from apps.agent_engine.demo_scenarios import scenario_count_by_slug
 from apps.agents import selectors, services
+from apps.agents.constants import AGENT_BEST_FOR
 from apps.agents.models import AgentTemplate
 from apps.crm.models import Lead
 from apps.knowledge.models import KnowledgeSource
@@ -29,23 +34,52 @@ class AgentPlaygroundForm(forms.Form):
 
 @login_required
 def agent_gallery_view(request):
-    """Display all 10 agent template cards."""
-    templates = selectors.list_active_templates()
+    """Display all 10 agent template cards grouped by category."""
+    templates = list(selectors.list_active_templates())
     deployed_slugs = set()
+    deployed_instances = {}
+    knowledge_counts = {}
+    scenario_counts = scenario_count_by_slug()
+
     if request.tenant:
-        deployed_slugs = set(
-            selectors.list_tenant_agents(request.tenant).values_list(
-                "template__slug", flat=True
-            )
-        )
+        for instance in selectors.list_tenant_agents(request.tenant).select_related("template"):
+            deployed_slugs.add(instance.template.slug)
+            deployed_instances[instance.template.slug] = instance.pk
+        for row in (
+            KnowledgeSource.objects.filter(tenant=request.tenant)
+            .values("agent_instance__template__slug")
+            .annotate(count=Count("id"))
+        ):
+            slug = row.get("agent_instance__template__slug")
+            if slug:
+                knowledge_counts[slug] = row["count"]
+
+    def _row(template):
+        return {
+            "template": template,
+            "scenario_count": scenario_counts.get(template.slug, 0),
+            "knowledge_count": knowledge_counts.get(template.slug, 0),
+            "best_for": AGENT_BEST_FOR.get(template.slug, "Multi-channel customer engagement"),
+            "deployed_instance_id": deployed_instances.get(template.slug),
+            "is_deployed": template.slug in deployed_slugs,
+        }
+
+    grouped = defaultdict(list)
+    for template in templates:
+        grouped[template.category].append(_row(template))
+
+    category_groups = sorted(grouped.items(), key=lambda item: item[0])
+
     return render(
         request,
         "agents/gallery.html",
         {
             "page_title": "AI Agents",
             "active_nav": "agents",
-            "templates": templates,
+            "category_groups": category_groups,
             "deployed_slugs": deployed_slugs,
+            "implemented_total": sum(1 for t in templates if t.is_implemented),
+            "deployed_total": len(deployed_slugs),
         },
     )
 

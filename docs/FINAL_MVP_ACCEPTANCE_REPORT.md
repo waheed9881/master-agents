@@ -2,8 +2,8 @@
 
 **Project:** AI Agent OS  
 **Report date:** June 2026  
-**Release:** MVP 1.6 (Phase 16 — Security Hardening)  
-**Verdict:** Accepted for polished local client/internal demo with security controls
+**Release:** MVP 1.7 (Phase 17 — UI/UX and Demo Packaging)  
+**Verdict:** Accepted for polished local client/internal demo with launch scripts and demo report
 
 ---
 
@@ -27,6 +27,20 @@
 | 14 | Real AI provider settings, guardrails, fallback, costs | Complete |
 | 15 | Workspace settings, team roles, plans, usage, onboarding, demo reset | Complete |
 | 16 | Fernet encryption, rate limits, audit logs, security dashboard, backups | Complete |
+| 17 | UI polish, Demo Center, demo report, Windows launch scripts | Complete |
+
+---
+
+## Phase 17 Demo Packaging
+
+| Asset | Path |
+|-------|------|
+| Demo Center | `/demo/` |
+| Demo Report (print) | `/demo/report/` |
+| Client script | `docs/CLIENT_DEMO_SCRIPT.md` |
+| Launch guide | `docs/LOCAL_LAUNCH.md` |
+| One-click demo | `run_local_demo.bat` |
+| Full checks | `run_local_checks.bat` |
 
 ---
 

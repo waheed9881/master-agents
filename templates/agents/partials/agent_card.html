@@ -1,23 +1,18 @@
-<div class="bg-white rounded-xl border border-gray-200 overflow-hidden flex flex-col h-full hover:shadow-lg transition-shadow duration-200">
-    <!-- Card header -->
+{% with template=row.template %}
+<div class="bg-white rounded-xl border border-gray-200 overflow-hidden flex flex-col h-full hover:shadow-md transition-shadow duration-200">
     <div class="p-5 pb-0">
         <div class="flex items-start justify-between gap-3 mb-3">
             <div class="flex-1 min-w-0">
-                <h3 class="font-semibold text-gray-900 text-lg leading-tight truncate">{{ template.name }}</h3>
+                <h3 class="font-semibold text-gray-900 text-lg leading-tight">{{ template.name }}</h3>
                 <p class="text-xs text-gray-400 mt-0.5">{{ template.category }}</p>
             </div>
             {% if template.is_implemented %}
-            <span class="shrink-0 inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
-                Brain Active
-            </span>
+            <span class="shrink-0 inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">Brain Active</span>
             {% else %}
-            <span class="shrink-0 inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">
-                Coming Soon
-            </span>
+            <span class="shrink-0 inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">Coming Soon</span>
             {% endif %}
         </div>
 
-        <!-- Badges -->
         <div class="flex flex-wrap gap-1.5 mb-3">
             {% if template.priority_label %}
             <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium
@@ -32,67 +27,59 @@
             <span class="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">{{ tag }}</span>
             {% endif %}
             {% endfor %}
+            {% if row.scenario_count %}
+            <span class="inline-flex items-center rounded-full bg-purple-50 px-2 py-0.5 text-xs text-purple-700">{{ row.scenario_count }} scenarios</span>
+            {% endif %}
         </div>
 
-        <p class="text-sm text-gray-600 line-clamp-3 mb-4">{{ template.description }}</p>
+        <p class="text-sm text-gray-600 line-clamp-2 mb-2">{{ template.description }}</p>
+        <p class="text-xs text-gray-500 mb-3"><span class="font-medium text-gray-700">Best for:</span> {{ row.best_for }}</p>
     </div>
 
-    <!-- Market need score -->
+    <div class="px-5 mb-4 grid grid-cols-3 gap-2 text-center text-xs">
+        <div class="rounded-lg bg-gray-50 p-2">
+            <p class="text-gray-500">Scenarios</p>
+            <p class="font-semibold text-gray-900">{{ row.scenario_count }}</p>
+        </div>
+        <div class="rounded-lg bg-gray-50 p-2">
+            <p class="text-gray-500">Knowledge</p>
+            <p class="font-semibold text-gray-900">{{ row.knowledge_count }}</p>
+        </div>
+        <div class="rounded-lg bg-gray-50 p-2">
+            <p class="text-gray-500">QA</p>
+            <p class="font-semibold text-green-700">{% if template.is_implemented %}PASS{% else %}N/A{% endif %}</p>
+        </div>
+    </div>
+
     <div class="px-5 mb-4">
         <div class="flex items-center justify-between text-xs mb-1.5">
             <span class="text-gray-500">Market need</span>
             <span class="font-semibold text-gray-900">{{ template.market_need_score }}%</span>
         </div>
         <div class="w-full bg-gray-100 rounded-full h-2">
-            <div class="h-2 rounded-full transition-all duration-500
-                {% if template.market_need_score >= 90 %}bg-indigo-600
-                {% elif template.market_need_score >= 75 %}bg-orange-500
-                {% else %}bg-blue-500{% endif %}"
-                style="width: {{ template.market_need_score }}%"></div>
+            <div class="h-2 rounded-full {% if template.market_need_score >= 90 %}bg-indigo-600{% elif template.market_need_score >= 75 %}bg-orange-500{% else %}bg-blue-500{% endif %}" style="width: {{ template.market_need_score }}%"></div>
         </div>
     </div>
 
-    <!-- Implementation progress -->
-    <div class="px-5 mb-5">
-        <div class="flex items-center justify-between text-xs mb-1.5">
-            <span class="text-gray-500">Implementation</span>
-            <span class="font-medium text-gray-700">
-                {% if template.is_implemented %}100%{% else %}Template only{% endif %}
-            </span>
-        </div>
-        <div class="w-full bg-gray-100 rounded-full h-1.5">
-            <div class="h-1.5 rounded-full bg-green-500"
-                 style="width: {% if template.is_implemented %}100{% else %}15{% endif %}%"></div>
-        </div>
-    </div>
-
-    <!-- CTA -->
     <div class="mt-auto p-5 pt-0 border-t border-gray-50">
-        <div class="pt-4 flex gap-2">
-            <a href="{% url 'agents:detail' slug=template.slug %}"
-               class="flex-1 text-center rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition">
-                View details
-            </a>
+        <div class="pt-4 flex flex-wrap gap-2">
+            <a href="{% url 'agents:detail' slug=template.slug %}" class="flex-1 min-w-[100px] text-center rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Details</a>
+            {% if template.is_implemented and row.deployed_instance_id %}
+            <a href="{% url 'agents:playground' agent_id=row.deployed_instance_id %}" class="flex-1 min-w-[100px] text-center rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-100">Playground</a>
+            {% endif %}
             {% if template.is_implemented %}
-                {% if template.slug in deployed_slugs %}
-                <span class="flex-1 text-center rounded-lg bg-green-50 border border-green-200 px-3 py-2 text-sm font-medium text-green-700">
-                    Deployed
-                </span>
+                {% if row.is_deployed %}
+                <span class="flex-1 min-w-[100px] text-center rounded-lg bg-green-50 border border-green-200 px-3 py-2 text-sm font-medium text-green-700">Deployed</span>
                 {% else %}
-                <form method="post" action="{% url 'agents:deploy' slug=template.slug %}" class="flex-1">
+                <form method="post" action="{% url 'agents:deploy' slug=template.slug %}" class="flex-1 min-w-[100px]">
                     {% csrf_token %}
-                    <button type="submit"
-                            class="w-full rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition">
-                        Deploy
-                    </button>
+                    <button type="submit" class="w-full rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700">Deploy</button>
                 </form>
                 {% endif %}
             {% else %}
-            <button disabled
-                    class="flex-1 rounded-lg bg-gray-100 px-3 py-2 text-sm font-medium text-gray-400 cursor-not-allowed">
-                Coming soon
-            </button>
+            <button disabled class="flex-1 min-w-[100px] rounded-lg bg-gray-100 px-3 py-2 text-sm font-medium text-gray-400 cursor-not-allowed">Soon</button>
             {% endif %}
         </div>
     </div>
 </div>
+{% endwith %}

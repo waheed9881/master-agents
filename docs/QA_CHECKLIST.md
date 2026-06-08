@@ -61,6 +61,17 @@ Mark each item PASS / FAIL / N/A. All core items should PASS before client demo.
 - [ ] `/onboarding/` wizard loads
 - [ ] `python manage.py reset_demo_data --safe` works
 
+## UI and Demo Packaging (Phase 17)
+
+- [ ] `/dashboard/` shows executive overview and quick actions
+- [ ] `/agents/` groups templates by category with Brain Active badges
+- [ ] `/demo/` shows 15-min and 30-min demo sections
+- [ ] `/demo/report/` loads and has Print button
+- [ ] `run_local_demo.bat` and `run_local_checks.bat` exist
+- [ ] `docs/CLIENT_DEMO_SCRIPT.md` and `docs/LOCAL_LAUNCH.md` exist
+- [ ] Demo banner shows on pages when mock mode enabled
+- [ ] Empty states show helpful CTAs on leads/inbox/knowledge
+
 ## Security Hardening (Phase 16)
 
 - [ ] `python manage.py generate_credentials_key` prints Fernet key

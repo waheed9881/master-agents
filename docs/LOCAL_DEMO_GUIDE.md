@@ -189,6 +189,13 @@ Scenario audit always uses mock unless `AUDIT_AI_PROVIDER=env` is set.
 
 **Demo reset:** `python manage.py reset_demo_data --safe --reseed` or `python scripts/reset_demo_state.py --safe`
 
+## Phase 17 — Demo Packaging
+
+1. Run `run_local_demo.bat` (Windows) for one-click setup + server
+2. Open `/demo/` — 15-minute and 30-minute demo scripts
+3. Print handout from `/demo/report/`
+4. Follow `docs/CLIENT_DEMO_SCRIPT.md` for exact talking points
+
 ## Phase 16 — Security Dashboard
 
 1. Open `/settings/security/` — DEBUG, encryption, rate limits, blockers

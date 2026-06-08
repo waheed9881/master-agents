@@ -1,0 +1,18 @@
+{% if demo_env.show_banner %}
+<div class="mb-6 rounded-xl border px-4 py-3 text-sm
+    {% if demo_env.banner_tone == 'warning' %}bg-amber-50 border-amber-200 text-amber-900
+    {% else %}bg-indigo-50 border-indigo-200 text-indigo-900{% endif %}">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div>
+            <strong>Local demo mode.</strong> {{ demo_env.banner_message }}
+        </div>
+        <div class="flex flex-wrap gap-2 shrink-0">
+            {% if demo_env.is_demo_user %}
+            <a href="{% url 'settings:password-change' %}" class="text-xs font-medium underline">Change demo password</a>
+            {% endif %}
+            <a href="{% url 'demo:center' %}" class="text-xs font-medium underline">Demo Center</a>
+            <a href="{% url 'demo:report' %}" class="text-xs font-medium underline">Demo report</a>
+        </div>
+    </div>
+</div>
+{% endif %}

@@ -1,0 +1,10 @@
+<div class="bg-white rounded-xl border border-gray-200 p-4 sm:p-5 {% if class %}{{ class }}{% endif %}">
+    <p class="text-xs sm:text-sm text-gray-500 mb-1">{{ label }}</p>
+    <p class="text-2xl sm:text-3xl font-bold {% if value_class %}{{ value_class }}{% else %}text-gray-900{% endif %}">{{ value }}</p>
+    {% if hint %}
+    <p class="text-xs text-gray-500 mt-1">{{ hint }}</p>
+    {% endif %}
+    {% if link_url %}
+    <a href="{{ link_url }}" class="text-xs text-indigo-600 hover:text-indigo-800 mt-2 inline-block font-medium">{{ link_text|default:"View" }} &rarr;</a>
+    {% endif %}
+</div>

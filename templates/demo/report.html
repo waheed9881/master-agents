@@ -1,0 +1,119 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}Demo Report — AI Agent OS{% endblock %}
+
+{% block extra_head %}
+<style>
+@media print {
+    .no-print { display: none !important; }
+    .print-report { box-shadow: none !important; border: none !important; }
+    body { background: white !important; }
+    main { padding: 0 !important; }
+}
+</style>
+{% endblock %}
+
+{% block app_content %}
+<div class="no-print mb-6 flex flex-wrap items-center justify-between gap-4">
+    <div>
+        <p class="text-sm text-gray-500">Print-friendly summary for client presentations</p>
+    </div>
+    <div class="flex gap-2">
+        <button onclick="window.print()" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">Print / Save as PDF</button>
+        <a href="{% url 'demo:center' %}" class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Back to Demo Center</a>
+    </div>
+</div>
+
+<article class="print-report bg-white rounded-xl border border-gray-200 p-8 max-w-4xl mx-auto">
+    <header class="border-b border-gray-200 pb-6 mb-6">
+        <p class="text-sm text-gray-500">{{ product_version }} — {{ phase_label }}</p>
+        <h1 class="text-3xl font-bold text-gray-900 mt-1">{{ product_name }}</h1>
+        <p class="text-gray-600 mt-2">Local demo report for <strong>{{ tenant_name }}</strong></p>
+        <p class="text-sm text-gray-500 mt-4">Generated for client/internal demo — not a production deployment certificate.</p>
+    </header>
+
+    <section class="mb-8">
+        <h2 class="text-lg font-semibold text-gray-900 mb-3">Quality metrics</h2>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+            <div class="rounded-lg bg-gray-50 p-4"><p class="text-gray-500">Automated tests</p><p class="text-xl font-bold">{{ documented_test_count }}+</p></div>
+            <div class="rounded-lg bg-gray-50 p-4"><p class="text-gray-500">Scenario audit</p><p class="text-xl font-bold text-green-700">{{ scenario_audit_passed }}/{{ scenario_count }}</p></div>
+            <div class="rounded-lg bg-gray-50 p-4"><p class="text-gray-500">Agent brains</p><p class="text-xl font-bold">{{ implemented_count }}/10</p></div>
+            <div class="rounded-lg bg-gray-50 p-4"><p class="text-gray-500">Deployed</p><p class="text-xl font-bold">{{ deployed_count }}</p></div>
+        </div>
+    </section>
+
+    <section class="mb-8">
+        <h2 class="text-lg font-semibold text-gray-900 mb-3">Modules complete</h2>
+        <ul class="list-disc list-inside text-sm text-gray-700 space-y-1">
+            {% for item in modules_complete %}
+            <li>{{ item }}</li>
+            {% endfor %}
+        </ul>
+    </section>
+
+    <section class="mb-8">
+        <h2 class="text-lg font-semibold text-gray-900 mb-3">10 AI agents</h2>
+        <table class="min-w-full text-sm border border-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="text-left px-3 py-2 border-b">Agent</th>
+                    <th class="text-left px-3 py-2 border-b">Category</th>
+                    <th class="text-left px-3 py-2 border-b">Brain</th>
+                    <th class="text-left px-3 py-2 border-b">Scenarios</th>
+                    <th class="text-left px-3 py-2 border-b">Regions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for agent in agents_list %}
+                <tr>
+                    <td class="px-3 py-2 border-b">{{ agent.name }}</td>
+                    <td class="px-3 py-2 border-b">{{ agent.category }}</td>
+                    <td class="px-3 py-2 border-b">{% if agent.brain_active %}Active{% else %}Stub{% endif %}</td>
+                    <td class="px-3 py-2 border-b">{{ agent.scenario_count }}</td>
+                    <td class="px-3 py-2 border-b">{{ agent.regions|join:", " }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+
+    <section class="mb-8 grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm">
+        <div>
+            <h2 class="text-lg font-semibold text-gray-900 mb-3">Runtime status</h2>
+            <ul class="space-y-2 text-gray-700">
+                <li>AI provider: {% if mock_ai %}Mock (local demo){% else %}{{ ai_provider }} (live){% endif %}</li>
+                <li>Integrations: {% if integrations_mock %}Mock mode{% else %}Live mode{% endif %}</li>
+                <li>Credential encryption: {% if encryption_configured %}Configured{% else %}Not set (mock OK){% endif %}</li>
+                <li>Rate limiting: {% if rate_limiting_enabled %}Enabled{% else %}Disabled{% endif %}</li>
+                <li>DEBUG: {% if debug_mode %}True (local only){% else %}False{% endif %}</li>
+            </ul>
+        </div>
+        <div>
+            <h2 class="text-lg font-semibold text-gray-900 mb-3">Security features</h2>
+            <ul class="list-disc list-inside text-gray-700 space-y-1">
+                {% for item in security_features %}
+                <li>{{ item }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </section>
+
+    <section class="mb-8">
+        <h2 class="text-lg font-semibold text-gray-900 mb-3">Production limitations</h2>
+        <ul class="list-disc list-inside text-sm text-gray-700 space-y-1">
+            {% for item in production_limitations %}
+            <li>{{ item }}</li>
+            {% endfor %}
+        </ul>
+    </section>
+
+    <section>
+        <h2 class="text-lg font-semibold text-gray-900 mb-3">Recommended next steps</h2>
+        <ol class="list-decimal list-inside text-sm text-gray-700 space-y-1">
+            {% for item in recommended_next_steps %}
+            <li>{{ item }}</li>
+            {% endfor %}
+        </ol>
+    </section>
+</article>
+{% endblock %}

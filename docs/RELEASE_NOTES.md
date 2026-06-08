@@ -181,6 +181,16 @@
 - Analytics shows runs by provider, fallback count, token/cost totals
 - `AUDIT_AI_PROVIDER=mock` keeps scenario audit deterministic
 
+## Phase 17 — UI/UX Polish and Demo Packaging
+
+- Polished executive dashboard with quick actions and security summary
+- Agent gallery grouped by category with scenario/knowledge counts
+- Demo Center: 15-min and 30-min scripts, mock vs real card, quality score
+- Printable demo report at `/demo/report/`
+- Windows launch scripts: `run_local_demo.bat`, `run_local_checks.bat` (+ PowerShell)
+- Shared UI components: stat cards, empty states, demo banner
+- Docs: `CLIENT_DEMO_SCRIPT.md`, `LOCAL_LAUNCH.md`
+
 ## Phase 16 — Security Hardening
 
 - Fernet credential encryption (`CREDENTIALS_ENCRYPTION_KEY`, `generate_credentials_key` command)

@@ -1,0 +1,18 @@
+<div class="text-center py-12 sm:py-16 px-6 bg-white rounded-xl border border-dashed border-gray-300">
+    {% if icon %}
+    <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4 text-gray-400">
+        {{ icon|safe }}
+    </div>
+    {% endif %}
+    <h3 class="text-base font-semibold text-gray-900 mb-2">{{ title }}</h3>
+    <p class="text-sm text-gray-500 max-w-md mx-auto mb-6">{{ message }}</p>
+    {% if cta_url %}
+    <a href="{{ cta_url }}"
+       class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition">
+        {{ cta_text }}
+    </a>
+    {% endif %}
+    {% if hint %}
+    <p class="text-xs text-gray-400 mt-4">{{ hint }}</p>
+    {% endif %}
+</div>

@@ -3,3 +3,9 @@
 [x-cloak] {
     display: none !important;
 }
+
+@media print {
+    .no-print {
+        display: none !important;
+    }
+}

@@ -64,10 +64,7 @@
         {% endfor %}
     </div>
     {% else %}
-    <div class="text-center py-16 px-6">
-        <p class="text-gray-500 mb-4">No conversations yet.</p>
-        <a href="{% url 'inbox:webchat_demo' %}" class="text-indigo-600 hover:underline text-sm">Try the web chat demo →</a>
-    </div>
+    {% include "components/empty_state.html" with title="No conversations yet" message="Conversations appear when customers message via web chat, WhatsApp mock, or Instagram mock." cta_url="/inbox/webchat/" cta_text="Open web chat demo" hint="Or run: python scripts/seed_demo_data.py" %}
     {% endif %}
 </div>
 {% endblock %}

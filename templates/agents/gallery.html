@@ -3,21 +3,24 @@
 {% block title %}AI Agents — AI Agent OS{% endblock %}
 
 {% block app_content %}
-<div class="mb-8">
-    <p class="text-gray-500 max-w-2xl">
-        Choose from 10 pre-built AI agent templates. Deploy the Sales Closing Agent for WhatsApp,
-        Instagram, and web chat — more agents coming soon.
-    </p>
+{% include "components/page_header.html" with subtitle="10 pre-built agent templates with active brains for local client demos. Deploy, test in playground, and connect to CRM and inbox." %}
+
+<div class="flex flex-wrap gap-2 mb-6">
+    <span class="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800">{{ implemented_total }}/10 Brain Active</span>
+    <span class="inline-flex items-center rounded-full bg-indigo-100 px-3 py-1 text-xs font-medium text-indigo-800">{{ deployed_total }} deployed in workspace</span>
+    <a href="{% url 'demo:center' %}" class="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-200">Demo Center</a>
 </div>
 
-<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-    {% for template in templates %}
-    {% include "agents/partials/agent_card.html" with template=template %}
-    {% empty %}
-    <div class="col-span-full text-center py-16 bg-white rounded-xl border border-dashed border-gray-300">
-        <p class="text-gray-500 mb-4">No agent templates found.</p>
-        <p class="text-sm text-gray-400">Run: python scripts/seed_agent_templates.py</p>
+{% for category, rows in category_groups %}
+<section class="mb-10">
+    <h2 class="text-lg font-semibold text-gray-900 mb-4">{{ category }}</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        {% for row in rows %}
+        {% include "agents/partials/agent_card.html" with row=row %}
+        {% endfor %}
     </div>
-    {% endfor %}
-</div>
+</section>
+{% empty %}
+{% include "components/empty_state.html" with title="No agent templates found" message="Seed the catalog to populate the gallery." hint="python scripts/seed_agent_templates.py" cta_url="/demo/" cta_text="Open Demo Center" %}
+{% endfor %}
 {% endblock %}

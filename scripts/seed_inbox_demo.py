@@ -26,8 +26,8 @@ def seed_inbox_for_tenant(tenant: Tenant, agent_instance=None):
         return
 
     samples = [
-        ("Sarah M.", "Hi, I'm interested in your WhatsApp automation service", "sarah.demo@test.com"),
-        ("Ali R.", "What are your pricing plans?", "ali.demo@test.com"),
+        ("Sarah Mitchell", "Hi, I am interested in your WhatsApp automation service for our retail store.", "sarah.mitchell@retailco.demo"),
+        ("Ali Rahman", "What are your pricing plans for a team of five sales reps?", "ali.rahman@techstartup.demo"),
     ]
 
     for name, msg, email in samples:

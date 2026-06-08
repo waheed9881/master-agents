@@ -3,92 +3,89 @@
 {% block title %}Demo Center — AI Agent OS{% endblock %}
 
 {% block app_content %}
-<div class="mb-6">
-    <h1 class="text-2xl font-bold text-gray-900">Demo Center</h1>
-    <p class="text-sm text-gray-500 mt-1">Local control room for client and internal demos (mock mode).</p>
+{% include "components/page_header.html" with subtitle="Local control room for 15-minute and 30-minute client demos. Mock AI and mock integrations are enabled by default." %}
+
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    {% include "components/stat_card.html" with label="Quality score" value=quality_audit_target value_class="text-green-700" hint="Scenario audit target" %}
+    {% include "components/stat_card.html" with label="Active brains" value=brains_display value_class="text-green-600" %}
+    {% include "components/stat_card.html" with label="Test suite" value=documented_test_count hint=phase_label %}
+    {% include "components/stat_card.html" with label="Product" value=product_version %}
 </div>
 
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-    <div class="bg-white rounded-xl border border-gray-200 p-4">
-        <p class="text-xs text-gray-500">Active agent brains</p>
-        <p class="text-2xl font-bold text-green-600">{{ implemented_count }}/10</p>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    {% include "components/stat_card.html" with label="AI provider" value=ai_provider_label value_class="text-amber-700" hint=ai_provider_hint %}
+    {% include "components/stat_card.html" with label="Integrations" value=integrations_label value_class="text-amber-700" %}
+    {% include "components/stat_card.html" with label="Security" value="Local secure MVP" value_class="text-indigo-700" link_url="/settings/security/" link_text="Security dashboard" %}
+    {% include "components/stat_card.html" with label="Tokens (30d)" value=agent_engine_stats.total_tokens_used|default:0 hint=cost_hint %}
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <div class="bg-white rounded-xl border border-gray-200 p-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-3">Start 15-minute demo</h2>
+        <ol class="space-y-2 text-sm text-gray-700 list-decimal list-inside mb-4">
+            <li><a href="{% url 'dashboard:index' %}" class="text-indigo-600">Dashboard</a> — executive overview</li>
+            <li><a href="{% url 'agents:gallery' %}" class="text-indigo-600">Agents</a> — 10 Brain Active templates</li>
+            {% if first_agent %}
+            <li><a href="{% url 'agents:playground' agent_id=first_agent.pk %}" class="text-indigo-600">Playground</a> — pricing scenario</li>
+            {% endif %}
+            <li><a href="{% url 'crm:leads' %}" class="text-indigo-600">CRM</a> — new lead</li>
+            <li><a href="{% url 'inbox:list' %}" class="text-indigo-600">Inbox</a> — AI conversation</li>
+            <li><a href="{% url 'integrations:index' %}" class="text-indigo-600">Integrations</a> — WhatsApp mock test</li>
+        </ol>
+        <a href="{% url 'demo:report' %}" class="text-sm text-indigo-600 font-medium">Print demo report &rarr;</a>
     </div>
-    <div class="bg-white rounded-xl border border-gray-200 p-4">
-        <p class="text-xs text-gray-500">AI provider</p>
-        <p class="text-lg font-semibold {% if mock_ai %}text-amber-700{% else %}text-green-700{% endif %}">
-            {% if mock_ai %}Mock (local){% else %}{{ ai_provider|title }} (live){% endif %}
-        </p>
-        <p class="text-xs text-gray-500 mt-1">Fallback: {{ fallback_provider }}</p>
-        {% if provider_key_missing %}
-        <p class="text-xs text-amber-700 mt-1">API key missing — will fallback to mock</p>
-        {% endif %}
-        <a href="{% url 'agent_engine_settings:ai-providers' %}" class="text-xs text-indigo-600 hover:text-indigo-800 mt-1 inline-block">AI provider settings →</a>
-    </div>
-    <div class="bg-white rounded-xl border border-gray-200 p-4">
-        <p class="text-xs text-gray-500">Integrations</p>
-        <p class="text-lg font-semibold {% if integrations_mock %}text-amber-700{% else %}text-green-700{% endif %}">
-            {% if integrations_mock %}Mock mode{% else %}Live mode{% endif %}
-        </p>
-    </div>
-    <div class="bg-white rounded-xl border border-gray-200 p-4">
-        <p class="text-xs text-gray-500">Test suite ({{ phase_label }})</p>
-        <p class="text-2xl font-bold text-indigo-600">{{ documented_test_count }}+</p>
-        <p class="text-xs text-gray-500 mt-1">{{ scenario_count }} demo scenarios</p>
-    </div>
-    <div class="bg-white rounded-xl border border-gray-200 p-4">
-        <p class="text-xs text-gray-500">AI tokens (30d)</p>
-        <p class="text-2xl font-bold text-gray-900">{{ agent_engine_stats.total_tokens_used|default:0 }}</p>
-        <p class="text-xs text-gray-500 mt-1">Est. cost: ${{ agent_engine_stats.estimated_cost|floatformat:4 }} · Fallbacks: {{ agent_engine_stats.fallback_count|default:0 }}</p>
+
+    <div class="bg-white rounded-xl border border-gray-200 p-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-3">Start 30-minute demo</h2>
+        <ol class="space-y-2 text-sm text-gray-700 list-decimal list-inside mb-4">
+            <li>All 15-minute steps above</li>
+            <li><a href="{% url 'knowledge:list' %}" class="text-indigo-600">Knowledge base</a> — agent answers from sources</li>
+            <li><a href="{% url 'analytics:dashboard' %}" class="text-indigo-600">Analytics</a> — KPIs and agent runs</li>
+            <li><a href="{% url 'settings:index' %}" class="text-indigo-600">Settings</a> — team, plans, usage</li>
+            <li><a href="{% url 'settings:security' %}" class="text-indigo-600">Security</a> — encryption and audit logs</li>
+            <li>Second agent vertical (e.g. clinic or real estate playground)</li>
+        </ol>
+        <p class="text-xs text-gray-500">Full script: docs/CLIENT_DEMO_SCRIPT.md</p>
     </div>
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
     <div class="bg-white rounded-xl border border-gray-200 p-6">
-        <h2 class="text-lg font-semibold text-gray-900 mb-4">Demo flow checklist</h2>
-        <ol class="space-y-2 text-sm text-gray-700 list-decimal list-inside">
-            <li>Login as <code class="text-xs bg-gray-100 px-1 rounded">admin@example.com</code></li>
-            <li>Open <a href="{% url 'agents:gallery' %}" class="text-indigo-600">AI Agents</a> — show 10 Brain Active cards</li>
-            <li>Open Sales Agent <a href="{% url 'agents:gallery' %}" class="text-indigo-600">playground</a></li>
-            <li>Load pricing scenario and send message</li>
-            <li>Check <a href="{% url 'crm:leads' %}" class="text-indigo-600">CRM lead</a> created</li>
-            <li>Check <a href="{% url 'inbox:list' %}" class="text-indigo-600">Inbox</a> conversation</li>
-            <li>Run <a href="{% url 'integrations:index' %}" class="text-indigo-600">WhatsApp mock test</a></li>
-            <li>Review <a href="{% url 'analytics:dashboard' %}" class="text-indigo-600">Analytics</a></li>
-        </ol>
+        <h2 class="text-lg font-semibold text-gray-900 mb-3">What is real vs mock</h2>
+        <ul class="text-sm space-y-2 text-gray-700">
+            <li><strong class="text-gray-900">Real:</strong> UI, CRM, inbox, knowledge, analytics, tenant isolation, audit logs</li>
+            <li><strong class="text-gray-900">Mock:</strong> AI replies (rule-based MockAIProvider by default)</li>
+            <li><strong class="text-gray-900">Mock:</strong> WhatsApp/Instagram (local simulator, no live Meta)</li>
+            <li><strong class="text-gray-900">Demo:</strong> Plan switching (no payment gateway)</li>
+        </ul>
     </div>
-
-    <div class="bg-white rounded-xl border border-gray-200 p-6">
-        <h2 class="text-lg font-semibold text-gray-900 mb-4">Quick links</h2>
-        <div class="grid grid-cols-2 gap-2 text-sm">
-            <a href="{% url 'agents:gallery' %}" class="rounded-lg border border-gray-200 px-3 py-2 hover:bg-gray-50">Agents</a>
-            <a href="{% url 'integrations:index' %}" class="rounded-lg border border-gray-200 px-3 py-2 hover:bg-gray-50">Integrations</a>
-            <a href="{% url 'integrations:webhook_events' %}" class="rounded-lg border border-gray-200 px-3 py-2 hover:bg-gray-50">Webhook Events</a>
-            <a href="{% url 'inbox:list' %}" class="rounded-lg border border-gray-200 px-3 py-2 hover:bg-gray-50">Inbox</a>
-            <a href="{% url 'crm:leads' %}" class="rounded-lg border border-gray-200 px-3 py-2 hover:bg-gray-50">CRM</a>
-            <a href="{% url 'knowledge:list' %}" class="rounded-lg border border-gray-200 px-3 py-2 hover:bg-gray-50">Knowledge</a>
-            <a href="{% url 'analytics:dashboard' %}" class="rounded-lg border border-gray-200 px-3 py-2 hover:bg-gray-50">Analytics</a>
-            <a href="{% url 'dashboard:index' %}" class="rounded-lg border border-gray-200 px-3 py-2 hover:bg-gray-50">Dashboard</a>
-        </div>
+    <div class="bg-white rounded-xl border border-amber-200 bg-amber-50 p-6">
+        <h2 class="text-lg font-semibold text-amber-900 mb-3">Demo do / do not claim</h2>
+        <ul class="text-sm space-y-2 text-amber-900">
+            <li><strong>Do:</strong> Show multi-tenant SaaS, 10 agents, CRM auto-update, guardrails</li>
+            <li><strong>Do:</strong> Say responses are deterministic mock AI unless live key configured</li>
+            <li><strong>Do not:</strong> Claim live Meta WhatsApp without INTEGRATIONS_MOCK_MODE=False</li>
+            <li><strong>Do not:</strong> Claim GPT/Claude intelligence unless real provider configured</li>
+        </ul>
     </div>
 </div>
 
-<div class="bg-indigo-50 rounded-xl border border-indigo-100 p-6 mb-8">
-    <h2 class="text-lg font-semibold text-indigo-900 mb-3">15-minute demo script</h2>
-    <ol class="space-y-2 text-sm text-indigo-900 list-decimal list-inside">
-        <li><strong>Dashboard</strong> — product overview and tenant workspace</li>
-        <li><strong>Agents gallery</strong> — 10 templates, all Brain Active</li>
-        <li><strong>Sales Agent playground</strong> — load "Pricing inquiry" scenario, send via web chat</li>
-        <li><strong>CRM</strong> — show new lead with score and status</li>
-        <li><strong>Inbox</strong> — show AI reply and conversation thread</li>
-        <li><strong>Integrations</strong> — WhatsApp mock test message</li>
-        <li><strong>Analytics</strong> — conversations and agent activity</li>
-    </ol>
-    <p class="text-xs text-indigo-700 mt-4">See docs/LOCAL_DEMO_GUIDE.md for the full 30-minute script and per-agent sample messages.</p>
+<div class="bg-white rounded-xl border border-gray-200 p-6 mb-8">
+    <h2 class="text-lg font-semibold text-gray-900 mb-4">Quick launch</h2>
+    <div class="flex flex-wrap gap-2">
+        <a href="{% url 'integrations:index' %}" class="rounded-lg border border-gray-200 px-4 py-2 text-sm hover:bg-gray-50">Integration mock test</a>
+        {% if first_agent %}
+        <a href="{% url 'agents:playground' agent_id=first_agent.pk %}" class="rounded-lg border border-gray-200 px-4 py-2 text-sm hover:bg-gray-50">Agent playground</a>
+        {% endif %}
+        <a href="{% url 'inbox:webchat_demo' %}" class="rounded-lg border border-gray-200 px-4 py-2 text-sm hover:bg-gray-50">Web chat demo</a>
+        <a href="{% url 'demo:report' %}" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm text-white hover:bg-indigo-700">Demo report (print)</a>
+    </div>
 </div>
 
 <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
-    <div class="px-6 py-4 border-b border-gray-100">
+    <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
         <h2 class="text-lg font-semibold text-gray-900">Agent scenario library</h2>
+        <span class="text-xs text-gray-500">{{ scenario_count }} scenarios in QA library</span>
     </div>
     <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200 text-sm">
@@ -97,12 +94,12 @@
                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Agent</th>
                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Scenarios</th>
                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Playground</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-200">
                 {% for row in agent_rows %}
-                <tr>
+                <tr class="hover:bg-gray-50">
                     <td class="px-4 py-3 font-medium">{{ row.instance.name }}</td>
                     <td class="px-4 py-3">{{ row.scenario_count }}</td>
                     <td class="px-4 py-3">
@@ -112,21 +109,20 @@
                         <span class="text-xs rounded-full px-2 py-0.5 bg-gray-100 text-gray-600">Stub</span>
                         {% endif %}
                     </td>
-                    <td class="px-4 py-3">
-                        <a href="{% url 'agents:playground' agent_id=row.instance.pk %}" class="text-indigo-600 hover:text-indigo-800">Open playground</a>
+                    <td class="px-4 py-3 space-x-3">
+                        <a href="{% url 'agents:playground' agent_id=row.instance.pk %}" class="text-indigo-600 hover:text-indigo-800">Playground</a>
+                        <a href="{% url 'integrations:index' %}" class="text-gray-600 hover:text-gray-800">Mock test</a>
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="4" class="px-4 py-8 text-center text-gray-500">No agents deployed. Run seed_demo_data.py</td>
+                    <td colspan="4" class="px-4 py-4">
+                        {% include "components/empty_state.html" with title="No agents deployed" message="Seed demo data to deploy all 10 agents." hint="python scripts/seed_demo_data.py" cta_url="/agents/" cta_text="Agent gallery" %}
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
-</div>
-
-<div class="mt-6 rounded-lg bg-amber-50 border border-amber-200 p-4 text-sm text-amber-900">
-    <strong>Mock mode notice:</strong> AI responses and intents use the local MockAIProvider (rule-based, not live LLM). WhatsApp and Instagram use local mock/simulator mode. Run <code class="text-xs bg-amber-100 px-1 rounded">python scripts/audit_agent_quality.py</code> to verify all {{ scenario_count }} scenarios. Do not claim live Meta or live AI connection unless configured.
 </div>
 {% endblock %}
