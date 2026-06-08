@@ -25,13 +25,36 @@ def _check(current: int, max_limit: int | None, resource: str) -> LimitCheckResu
         )
     at_limit = current >= max_limit
     if at_limit:
+        upgrade_hint = "Upgrade your plan in Settings -> Plans."
+        resource_messages = {
+            "active agents": (
+                f"Agent deployment limit reached ({current}/{max_limit}). "
+                f"Deactivate an agent or {upgrade_hint.lower()}"
+            ),
+            "knowledge sources": (
+                f"Knowledge source limit reached ({current}/{max_limit}). "
+                f"Remove a source or {upgrade_hint.lower()}"
+            ),
+            "integration channels": (
+                f"Integration channel limit reached ({current}/{max_limit}). "
+                f"Remove a channel or {upgrade_hint.lower()}"
+            ),
+            "messages this month": (
+                f"Monthly message limit reached ({current}/{max_limit}). "
+                f"{upgrade_hint}"
+            ),
+        }
+        message = resource_messages.get(
+            resource,
+            (
+                f"Your plan allows up to {max_limit} {resource}. "
+                f"You currently have {current}. {upgrade_hint}"
+            ),
+        )
         return LimitCheckResult(
             allowed=False,
             at_limit=True,
-            message=(
-                f"Your plan allows up to {max_limit} {resource}. "
-                f"You currently have {current}. Upgrade your plan in Settings → Plans."
-            ),
+            message=message,
             current=current,
             max_limit=max_limit,
         )

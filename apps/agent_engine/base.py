@@ -165,6 +165,20 @@ class BaseAgent(ABC):
             intent=ai_result.get("intent", "general"),
             confidence=ai_result.get("confidence", 0.0),
         )
+        if not guardrails.safe:
+            from apps.tenants.audit import log_audit_event
+
+            log_audit_event(
+                action="unsafe_guardrail_triggered",
+                tenant=conversation.tenant,
+                object_type="conversation",
+                object_id=conversation.pk,
+                metadata={
+                    "flags": guardrails.flags,
+                    "reason": guardrails.reason,
+                    "domain": domain,
+                },
+            )
 
         handoff = self.decide_handoff(
             message,

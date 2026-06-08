@@ -99,7 +99,7 @@ def find_or_create_conversation(
     )
 
 
-def enable_human_takeover(conversation: Conversation) -> Conversation:
+def enable_human_takeover(conversation: Conversation, *, user=None, request=None) -> Conversation:
     conversation.human_takeover = True
     conversation.ai_enabled = False
     conversation.save(update_fields=["human_takeover", "ai_enabled", "updated_at"])
@@ -107,6 +107,17 @@ def enable_human_takeover(conversation: Conversation) -> Conversation:
         conversation,
         sender_type=SenderType.SYSTEM,
         message_text="A human agent will take over this conversation shortly.",
+    )
+    from apps.tenants.audit import log_audit_event
+
+    log_audit_event(
+        action="human_handoff_toggle",
+        tenant=conversation.tenant,
+        user=user,
+        object_type="conversation",
+        object_id=conversation.pk,
+        metadata={"enabled": True},
+        request=request,
     )
     return conversation
 

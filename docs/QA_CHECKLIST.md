@@ -61,6 +61,21 @@ Mark each item PASS / FAIL / N/A. All core items should PASS before client demo.
 - [ ] `/onboarding/` wizard loads
 - [ ] `python manage.py reset_demo_data --safe` works
 
+## Security Hardening (Phase 16)
+
+- [ ] `python manage.py generate_credentials_key` prints Fernet key
+- [ ] `CREDENTIALS_ENCRYPTION_KEY` in `.env` encrypts new channel credentials
+- [ ] API returns `access_token_masked` not raw tokens
+- [ ] `/settings/security/` shows status cards and production blockers
+- [ ] `/settings/security/password/` changes password (user stays logged in)
+- [ ] `/settings/audit-logs/` loads for owner/admin; sales rep gets 403
+- [ ] Demo reset and credential update create audit log entries
+- [ ] Rate limit returns 429 on repeated webhook/login (when enabled)
+- [ ] `python manage.py security_audit` runs without external APIs
+- [ ] `python scripts/audit_tenant_isolation.py` reports PASS
+- [ ] `python scripts/local_backup.py` creates backup in `backups/`
+- [ ] `python scripts/validate_backup.py` validates backup file
+
 ## Agent Quality (Phase 14)
 
 - [ ] `python scripts/audit_agent_quality.py` reports 60 passed, 0 warnings, 0 failed

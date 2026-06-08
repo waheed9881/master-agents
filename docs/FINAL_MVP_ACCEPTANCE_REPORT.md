@@ -2,8 +2,8 @@
 
 **Project:** AI Agent OS  
 **Report date:** June 2026  
-**Release:** MVP 1.5 (Phase 15 — SaaS Productization)  
-**Verdict:** Accepted for polished local client/internal demo
+**Release:** MVP 1.6 (Phase 16 — Security Hardening)  
+**Verdict:** Accepted for polished local client/internal demo with security controls
 
 ---
 
@@ -26,6 +26,21 @@
 | 13 | Intent normalization, domain intents, 60/0/0 audit | Complete |
 | 14 | Real AI provider settings, guardrails, fallback, costs | Complete |
 | 15 | Workspace settings, team roles, plans, usage, onboarding, demo reset | Complete |
+| 16 | Fernet encryption, rate limits, audit logs, security dashboard, backups | Complete |
+
+---
+
+## Phase 16 Security Metrics
+
+| Metric | Value |
+|--------|-------|
+| Test suite | 287 passing |
+| Scenario audit | 60 passed, 0 warnings, 0 failed |
+| Credential encryption | Fernet with `CREDENTIALS_ENCRYPTION_KEY` |
+| Rate limiting | Webhooks, web chat, login, playground, provider test |
+| Audit log actions | 12+ event types |
+| Backup | `local_backup.py` + `validate_backup.py` |
+| Tenant isolation | `audit_tenant_isolation.py` PASS |
 
 ---
 
@@ -94,20 +109,21 @@ Validation scripts:
 - `scripts/audit_routes.py` — route audit
 - `scripts/api_smoke_test.py` — API smoke test
 - `python manage.py check_deploy_ready` — deployment readiness
+- `python manage.py security_audit` — comprehensive security audit
+- `python scripts/audit_tenant_isolation.py` — tenant isolation check
+- `python scripts/local_backup.py` / `validate_backup.py` — backup validation
 
 ---
 
 ## Known Limitations
 
-1. Only 1 of 10 agents is fully implemented (Sales Closing Agent)
-2. AI defaults to mock provider (no API key required)
-3. Integrations default to mock mode (no live Meta outbound)
-4. Knowledge search is keyword-based (no vector embeddings)
-5. Credential encryption fields are placeholders
-6. No rate limiting on public endpoints
-7. No billing or subscription management
-8. No automated monitoring or alerting
-9. Demo seed resets password to known value
+1. AI defaults to mock provider (no API key required)
+2. Integrations default to mock mode (no live Meta outbound)
+3. Knowledge search is keyword-based (no vector embeddings)
+4. No billing or payment gateway
+5. Backups are manual scripts (not scheduled)
+6. No automated monitoring or alerting
+7. Demo seed resets password to known value
 
 ---
 
@@ -116,14 +132,12 @@ Validation scripts:
 | Item | Risk | Required before production |
 |------|------|---------------------------|
 | DEBUG=True default | High | Set DEBUG=False |
-| Default SECRET_KEY | High | Unique 50+ char key |
 | Demo password | High | Change or remove account |
-| Mock integrations | Medium | Live Meta setup |
-| No rate limiting | Medium | Add nginx/app limits |
-| No credential encryption | Medium | Implement Fernet |
-| No backups automation | High | Scheduled pg_dump |
+| Mock integrations | Medium | Live Meta setup + encryption key |
+| No backup schedule | High | Cron/Celery for `local_backup.py` |
 | No monitoring | Medium | Sentry/Datadog/etc. |
-| 9 agent templates stub-only | Low | Implement as needed |
+| No HTTPS/WAF | High | Reverse proxy + TLS |
+| No payment gateway | Low | Out of MVP scope |
 
 ---
 
@@ -131,23 +145,20 @@ Validation scripts:
 
 ### Immediate (staging handoff)
 1. Deploy to staging per [STAGING_DEPLOYMENT_PLAN.md](STAGING_DEPLOYMENT_PLAN.md)
-2. Complete [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md)
-3. Change demo admin password
-4. Run post-deploy smoke tests
+2. Run `python manage.py security_audit` and `check_deploy_ready`
+3. Set `CREDENTIALS_ENCRYPTION_KEY` via `generate_credentials_key`
+4. Change demo admin password via Settings → Security
+5. Run `python scripts/local_backup.py` before go-live
 
 ### Short term (post-staging)
-1. Implement second agent module (e.g. real estate)
-2. Add nginx reverse proxy + HTTPS
-3. Set up database backup schedule
-4. Add basic error monitoring
+1. Add nginx reverse proxy + HTTPS
+2. Schedule automated backups
+3. Add basic error monitoring (Sentry)
 
 ### Medium term (production path)
 1. Live Meta Cloud API integration
 2. pgvector semantic search
-3. Fernet credential encryption
-4. Rate limiting on webhooks and web chat
-5. Load testing
-6. Security penetration review
+3. Load testing and penetration review
 
 ---
 

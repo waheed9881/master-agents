@@ -95,9 +95,19 @@ def ensure_tenant_subscription(
     )
 
 
-def change_tenant_plan(tenant: Tenant, plan: Plan) -> TenantSubscription:
+def change_tenant_plan(
+    tenant: Tenant,
+    plan: Plan,
+    *,
+    user=None,
+    request=None,
+) -> TenantSubscription:
     """Switch tenant to a different plan (local demo only)."""
     now = timezone.now()
+    old_plan = None
+    existing = TenantSubscription.objects.filter(tenant=tenant).select_related("plan").first()
+    if existing:
+        old_plan = existing.plan.slug
     sub, _ = TenantSubscription.objects.update_or_create(
         tenant=tenant,
         defaults={
@@ -106,5 +116,16 @@ def change_tenant_plan(tenant: Tenant, plan: Plan) -> TenantSubscription:
             "current_period_start": now,
             "current_period_end": now + timedelta(days=30),
         },
+    )
+    from apps.tenants.audit import log_audit_event
+
+    log_audit_event(
+        action="plan_switch",
+        tenant=tenant,
+        user=user,
+        object_type="plan",
+        object_id=plan.slug,
+        metadata={"from_plan": old_plan, "to_plan": plan.slug},
+        request=request,
     )
     return sub

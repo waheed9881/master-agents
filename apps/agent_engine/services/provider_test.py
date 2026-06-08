@@ -15,6 +15,8 @@ def run_provider_test(
     provider_name: str,
     agent_instance: AgentInstance,
     message_text: str,
+    user=None,
+    request=None,
 ) -> dict:
     """Execute a single provider test and return safe response payload."""
     domain = get_domain_for_slug(agent_instance.template.slug)
@@ -38,6 +40,32 @@ def run_provider_test(
 
     reply = guardrails.rewritten_reply or structured.reply_text or result.text
     status = get_provider_status(provider_name)
+
+    from apps.tenants.audit import log_audit_event
+
+    log_audit_event(
+        action="ai_provider_test",
+        tenant=agent_instance.tenant,
+        user=user,
+        object_type="agent_instance",
+        object_id=agent_instance.pk,
+        metadata={
+            "provider": provider_name,
+            "resolved": resolved,
+            "safety_status": guardrails.status,
+        },
+        request=request,
+    )
+    if not guardrails.safe:
+        log_audit_event(
+            action="unsafe_guardrail_triggered",
+            tenant=agent_instance.tenant,
+            user=user,
+            object_type="provider_test",
+            object_id=agent_instance.pk,
+            metadata={"flags": guardrails.flags, "reason": guardrails.reason},
+            request=request,
+        )
 
     return {
         "provider": resolved,

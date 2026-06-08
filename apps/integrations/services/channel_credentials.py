@@ -3,39 +3,26 @@ from django.conf import settings
 
 from apps.inbox.models import ChannelAccount, ChannelType
 from apps.integrations.models import ChannelCredential
+from apps.integrations.services.credential_encryption import (
+    decrypt_secret,
+    encrypt_secret,
+    mask_secret,
+    rotate_secret_if_plain,
+)
 from apps.tenants.models import Tenant
 
 
 def encrypt_value(value: str) -> str:
     """Encrypt a secret value. Uses Fernet when key is configured."""
-    if not value:
-        return ""
-    key = getattr(settings, "CREDENTIALS_ENCRYPTION_KEY", "")
-    if not key:
-        # TODO: require encryption in production
-        return f"plain:{value}"
-    try:
-        from cryptography.fernet import Fernet
-
-        return Fernet(key.encode() if isinstance(key, str) else key).encrypt(value.encode()).decode()
-    except Exception:
-        return f"plain:{value}"
+    return encrypt_secret(value)
 
 
 def decrypt_value(encrypted: str) -> str:
-    if not encrypted:
-        return ""
-    if encrypted.startswith("plain:"):
-        return encrypted[6:]
-    key = getattr(settings, "CREDENTIALS_ENCRYPTION_KEY", "")
-    if not key:
-        return ""
-    try:
-        from cryptography.fernet import Fernet
+    return decrypt_secret(encrypted)
 
-        return Fernet(key.encode() if isinstance(key, str) else key).decrypt(encrypted.encode()).decode()
-    except Exception:
-        return ""
+
+def mask_credential_value(encrypted: str) -> str:
+    return mask_secret(encrypted)
 
 
 def get_meta_app_secret() -> str:

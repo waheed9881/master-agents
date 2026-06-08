@@ -24,6 +24,13 @@ def instagram_webhook(request):
             return HttpResponse(challenge, content_type="text/plain")
         return HttpResponse("Forbidden", status=403)
 
+    from apps.accounts.rate_limit import get_rate_limit_for_scope, rate_limit_or_429
+
+    limit, window = get_rate_limit_for_scope("webhook")
+    blocked = rate_limit_or_429(request, "webhook", limit, window)
+    if blocked:
+        return blocked
+
     try:
         payload = json.loads(request.body)
     except json.JSONDecodeError:

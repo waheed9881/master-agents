@@ -1,0 +1,68 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}{{ page_title }} — AI Agent OS{% endblock %}
+
+{% block app_content %}
+{% include "settings/_nav.html" %}
+<h1 class="text-2xl font-bold text-gray-900 mb-6">Audit Logs</h1>
+
+<form method="get" class="bg-white rounded-xl border border-gray-200 p-4 mb-6 flex flex-wrap gap-4 items-end text-sm">
+    <div>
+        <label class="block text-gray-600 mb-1">Action</label>
+        <select name="action" class="border border-gray-300 rounded-lg px-3 py-2">
+            <option value="">All</option>
+            {% for a in actions %}
+            <option value="{{ a }}" {% if filter_action == a %}selected{% endif %}>{{ a }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div>
+        <label class="block text-gray-600 mb-1">User</label>
+        <select name="user_id" class="border border-gray-300 rounded-lg px-3 py-2">
+            <option value="">All</option>
+            {% for u in team_users %}
+            <option value="{{ u.pk }}" {% if filter_user_id == u.pk|stringformat:"s" %}selected{% endif %}>{{ u.email }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div>
+        <label class="block text-gray-600 mb-1">From</label>
+        <input type="date" name="date_from" value="{{ filter_date_from }}" class="border border-gray-300 rounded-lg px-3 py-2">
+    </div>
+    <div>
+        <label class="block text-gray-600 mb-1">To</label>
+        <input type="date" name="date_to" value="{{ filter_date_to }}" class="border border-gray-300 rounded-lg px-3 py-2">
+    </div>
+    <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Filter</button>
+    <a href="{% url 'settings:audit-logs' %}" class="px-4 py-2 text-gray-600 hover:text-gray-900">Clear</a>
+</form>
+
+<div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+    <table class="min-w-full text-sm">
+        <thead class="bg-gray-50">
+            <tr class="text-left text-gray-600">
+                <th class="px-4 py-3">Timestamp</th>
+                <th class="px-4 py-3">User</th>
+                <th class="px-4 py-3">Action</th>
+                <th class="px-4 py-3">Object</th>
+                <th class="px-4 py-3">Metadata</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in logs %}
+            <tr class="border-t border-gray-100 hover:bg-gray-50">
+                <td class="px-4 py-3 text-gray-600 whitespace-nowrap">{{ log.created_at|date:"Y-m-d H:i:s" }}</td>
+                <td class="px-4 py-3">{{ log.user.email|default:"-" }}</td>
+                <td class="px-4 py-3 font-mono text-xs">{{ log.action }}</td>
+                <td class="px-4 py-3">{{ log.object_type }}{% if log.object_id %} #{{ log.object_id }}{% endif %}</td>
+                <td class="px-4 py-3 text-gray-600 max-w-md truncate" title="{{ log.metadata }}">{{ log.metadata }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="px-4 py-8 text-center text-gray-500">No audit log entries found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

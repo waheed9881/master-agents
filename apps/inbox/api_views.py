@@ -78,7 +78,7 @@ class HumanTakeoverAPIView(APIView):
         conversation = selectors.get_tenant_conversation(tenant, conversation_id)
         if not conversation:
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
-        services.enable_human_takeover(conversation)
+        services.enable_human_takeover(conversation, user=request.user, request=request)
         return Response({"human_takeover": True, "ai_enabled": False})
 
 
@@ -101,6 +101,15 @@ class WebChatMessageAPIView(APIView):
         tenant, err = _require_tenant(request)
         if err:
             return err
+
+        from apps.accounts.rate_limit import get_rate_limit_for_scope, rate_limit_or_429
+
+        limit, window = get_rate_limit_for_scope("webchat")
+        blocked = rate_limit_or_429(
+            request, "webchat", limit, window, tenant=tenant, user=request.user
+        )
+        if blocked:
+            return blocked
 
         from apps.inbox.serializers import WebChatMessageSerializer
 

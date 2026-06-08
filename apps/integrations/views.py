@@ -82,7 +82,9 @@ def channel_create_view(request):
             if not limit.allowed:
                 messages.warning(request, limit.message)
                 return redirect("integrations:index")
-            account = create_channel_account(tenant, form)
+            account = create_channel_account(
+                tenant, form, user=request.user, request=request
+            )
             messages.success(request, f"Channel '{account.display_name}' created.")
             return redirect("integrations:index")
     else:
@@ -108,7 +110,9 @@ def channel_edit_view(request, channel_id):
     if request.method == "POST":
         form = ChannelAccountForm(request.POST)
         if form.is_valid():
-            update_channel_account(account, form)
+            update_channel_account(
+                account, form, user=request.user, request=request
+            )
             messages.success(request, f"Channel '{account.display_name}' updated.")
             return redirect("integrations:index")
     else:

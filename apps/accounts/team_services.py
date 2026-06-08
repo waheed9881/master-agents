@@ -46,6 +46,16 @@ def create_team_member(
         tenant=tenant,
         is_active=is_active,
     )
+    from apps.tenants.audit import log_audit_event
+
+    log_audit_event(
+        action="team_member_create",
+        tenant=tenant,
+        user=None,
+        object_type="user",
+        object_id=user.pk,
+        metadata={"email": email, "role": role},
+    )
     return user, temp_password
 
 
@@ -80,4 +90,20 @@ def update_team_member(
     if is_active is not None:
         member.is_active = is_active
     member.save()
+
+    action = "team_member_deactivate" if is_active is False else "team_member_update"
+    from apps.tenants.audit import log_audit_event
+
+    log_audit_event(
+        action=action,
+        tenant=member.tenant,
+        user=actor,
+        object_type="user",
+        object_id=member.pk,
+        metadata={
+            "email": member.email,
+            "role": member.role,
+            "is_active": member.is_active,
+        },
+    )
     return member

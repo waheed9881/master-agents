@@ -115,6 +115,35 @@ class Command(BaseCommand):
         else:
             self._line("PASS", "Demo account", "not found")
 
+        enc_key = getattr(settings, "CREDENTIALS_ENCRYPTION_KEY", "")
+        if enc_key:
+            self._line("PASS", "CREDENTIALS_ENCRYPTION_KEY", "set")
+        elif mock_mode:
+            self._line(
+                "WARN",
+                "CREDENTIALS_ENCRYPTION_KEY",
+                "not set (plain: storage in mock mode)",
+            )
+            warnings += 1
+        else:
+            self._line(
+                "FAIL",
+                "CREDENTIALS_ENCRYPTION_KEY",
+                "required when INTEGRATIONS_MOCK_MODE is False",
+            )
+            failures += 1
+
+        rate_enabled = getattr(settings, "RATE_LIMITING_ENABLED", True)
+        if rate_enabled:
+            self._line(
+                "PASS",
+                "Rate limiting",
+                f"enabled (webchat={settings.RATE_LIMIT_WEBCHAT_PER_MINUTE}/min)",
+            )
+        else:
+            self._line("WARN", "Rate limiting", "disabled")
+            warnings += 1
+
         self.stdout.write("=" * 45)
         if failures:
             self.stdout.write(self.style.ERROR(f"Result: FAIL ({failures} failure(s), {warnings} warning(s))"))

@@ -181,23 +181,33 @@
 - Analytics shows runs by provider, fallback count, token/cost totals
 - `AUDIT_AI_PROVIDER=mock` keeps scenario audit deterministic
 
+## Phase 16 — Security Hardening
+
+- Fernet credential encryption (`CREDENTIALS_ENCRYPTION_KEY`, `generate_credentials_key` command)
+- Cache-based rate limiting on webhooks, web chat, login, playground, provider test
+- `AuditLog` model and `/settings/audit-logs/` page (owner/admin)
+- Security dashboard at `/settings/security/` with production blocker list
+- Password change at `/settings/security/password/`
+- `python manage.py security_audit` command
+- Backup scripts: `local_backup.py`, `local_restore.py`, `validate_backup.py`
+- Tenant isolation audit: `scripts/audit_tenant_isolation.py`
+- 287 tests passing; scenario audit 60/0/0
+
 ## Known Limitations
 
 - AI uses MockAIProvider in local demo (keyword-based, not LLM)
 - Integrations use mock mode by default
 - No vector semantic search
-- Credential encryption is placeholder
-- No rate limiting on public endpoints
+- Backups are manual scripts (no scheduled automation)
 - Plan switching is local/demo only (no payment gateway)
 
 ## What Remains for Live Production
 
 1. Live Meta Cloud API integration (disable mock mode)
-3. Fernet credential encryption
-4. pgvector semantic search
-5. Rate limiting and WAF rules
-6. HTTPS infrastructure and secrets manager
-7. Database backup automation
-8. Monitoring and alerting (Sentry, Datadog, etc.)
-9. Remove or secure demo accounts
-10. Load testing and performance tuning
+2. HTTPS infrastructure and secrets manager
+3. Scheduled backup automation (cron/Celery)
+4. Monitoring and alerting (Sentry, Datadog, etc.)
+5. WAF / edge DDoS protection
+6. pgvector semantic search
+7. Remove or secure demo accounts before public launch
+8. Load testing and performance tuning

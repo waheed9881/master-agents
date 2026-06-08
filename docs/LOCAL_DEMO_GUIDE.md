@@ -189,11 +189,25 @@ Scenario audit always uses mock unless `AUDIT_AI_PROVIDER=env` is set.
 
 **Demo reset:** `python manage.py reset_demo_data --safe --reseed` or `python scripts/reset_demo_state.py --safe`
 
+## Phase 16 — Security Dashboard
+
+1. Open `/settings/security/` — DEBUG, encryption, rate limits, blockers
+2. Change password at `/settings/security/password/`
+3. View audit trail at `/settings/audit-logs/` (owner/admin)
+4. Generate encryption key: `python manage.py generate_credentials_key`
+5. Run security audit: `python manage.py security_audit`
+
+**Before external demo:** change `admin@example.com` password and set `CREDENTIALS_ENCRYPTION_KEY`.
+
 ## Validation Commands
 
 ```bash
 python manage.py check
 python scripts/check_environment.py
+python manage.py security_audit
+python scripts/audit_tenant_isolation.py
+python scripts/local_backup.py
+python scripts/validate_backup.py
 python scripts/smoke_test.py
 python scripts/audit_routes.py
 python scripts/api_smoke_test.py

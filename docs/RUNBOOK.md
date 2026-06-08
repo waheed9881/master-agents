@@ -147,6 +147,21 @@ python manage.py collectstatic --noinput
 
 ## Backup Database
 
+### Automated local script (Phase 16)
+
+```bash
+python scripts/local_backup.py
+python scripts/validate_backup.py
+```
+
+Creates timestamped files in `backups/` — tries `pg_dump` first, falls back to JSON fixture export.
+
+Restore (destructive — requires `--confirm`):
+
+```bash
+python scripts/local_restore.py --file backups/backup_YYYYMMDD_HHMMSS.json --confirm
+```
+
 ### Docker Postgres
 ```bash
 docker compose exec postgres pg_dump -U aiagent ai_agent_os > backup_$(date +%Y%m%d).sql

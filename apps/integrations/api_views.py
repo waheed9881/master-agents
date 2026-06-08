@@ -6,6 +6,7 @@ from apps.agents import selectors as agent_selectors
 from apps.inbox.models import ChannelAccount
 from apps.integrations.forms import ChannelAccountForm
 from apps.integrations.models import WebhookEvent
+from apps.integrations.services.channel_credentials import mask_credential_value
 from apps.integrations.services.channel_service import (
     account_form_initial,
     create_channel_account,
@@ -38,6 +39,8 @@ class ChannelAccountListAPIView(APIView):
                 "phone_number_id": cred.phone_number_id if cred else "",
                 "page_id": cred.page_id if cred else "",
                 "business_account_id": cred.business_account_id if cred else "",
+                "access_token_masked": mask_credential_value(cred.access_token_encrypted) if cred else "",
+                "app_secret_masked": mask_credential_value(cred.app_secret_encrypted) if cred else "",
             })
         return Response(data)
 
@@ -48,7 +51,9 @@ class ChannelAccountListAPIView(APIView):
         form = ChannelAccountForm(request.data)
         if not form.is_valid():
             return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
-        account = create_channel_account(tenant, form)
+        account = create_channel_account(
+            tenant, form, user=request.user, request=request
+        )
         return Response({"id": account.pk, "display_name": account.display_name}, status=status.HTTP_201_CREATED)
 
 
@@ -71,6 +76,8 @@ class ChannelAccountDetailAPIView(APIView):
             "page_id": cred.page_id if cred else "",
             "business_account_id": cred.business_account_id if cred else "",
             "verify_token": cred.verify_token if cred else "",
+            "access_token_masked": mask_credential_value(cred.access_token_encrypted) if cred else "",
+            "app_secret_masked": mask_credential_value(cred.app_secret_encrypted) if cred else "",
         })
 
     def patch(self, request, account_id):
@@ -85,7 +92,9 @@ class ChannelAccountDetailAPIView(APIView):
         form = ChannelAccountForm(merged)
         if not form.is_valid():
             return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
-        update_channel_account(account, form)
+        update_channel_account(
+            account, form, user=request.user, request=request
+        )
         return Response({"id": account.pk, "display_name": account.display_name})
 
 

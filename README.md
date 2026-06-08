@@ -2,7 +2,7 @@
 
 Production-minded SaaS platform for business AI agents. Modular monolith architecture with a shared agent engine and pluggable agent modules.
 
-**MVP Status:** Phases 1-15 complete. **Local demo-ready** — workspace settings, team roles, plan limits, onboarding, demo reset tools, 10 agent brains, scenario QA, Demo Center, mock integrations. Not approved for public production without security hardening (see limitations below).
+**MVP Status:** Phases 1-16 complete. **Local demo-ready** — Fernet credential encryption, rate limiting, audit logs, security dashboard, backup scripts, tenant isolation audit, workspace settings, team roles, plan limits, 10 agent brains, 60/0/0 scenario QA. Not approved for public production without HTTPS, monitoring, and scheduled backups (see limitations below).
 
 ## Product Overview
 
@@ -74,6 +74,13 @@ python -m pytest tests/ -q
 python manage.py check
 python scripts/check_environment.py
 python manage.py check_deploy_ready
+python manage.py security_audit
+python manage.py generate_credentials_key
+
+# Security and isolation audits
+python scripts/audit_tenant_isolation.py
+python scripts/local_backup.py
+python scripts/validate_backup.py
 
 # Route and API audits
 python scripts/smoke_test.py
@@ -168,6 +175,8 @@ Full reference: [docs/API_ENDPOINTS.md](docs/API_ENDPOINTS.md)
 | 8 | Complete | WhatsApp/Instagram webhook hardening |
 | 9 | Complete | Docs, CI, security, deployment readiness |
 | 10 | Complete | Release freeze, audit, staging DevOps |
+| 11-15 | Complete | Integrations UI, agent brains, Demo Center, AI providers, SaaS productization |
+| 16 | Complete | Security hardening, encryption, rate limits, audit logs, backups |
 
 ## Staging Deployment
 
@@ -179,14 +188,14 @@ Full reference: [docs/API_ENDPOINTS.md](docs/API_ENDPOINTS.md)
 
 ## Production Limitations
 
-This MVP is **not production-ready** without addressing:
+Phase 16 adds local security controls, but public production still requires:
 
-- Default demo credentials (`Admin123!`)
-- Mock AI provider and mock Meta integrations (by default)
-- No rate limiting on webhooks or web chat
-- Credential encryption is placeholder only
-- No automated backups or monitoring
-- Only 1 of 10 agent modules implemented
+- Change demo credentials (`admin@example.com` / `Admin123!`)
+- Set `DEBUG=False`, HTTPS, strict `ALLOWED_HOSTS` and `CSRF_TRUSTED_ORIGINS`
+- Set `CREDENTIALS_ENCRYPTION_KEY` (run `python manage.py generate_credentials_key`)
+- Scheduled backups (use `scripts/local_backup.py` or Docker `pg_dump`)
+- APM / error monitoring (not included in MVP)
+- Payment gateway and live Meta OAuth (out of scope)
 
 See [docs/SECURITY.md](docs/SECURITY.md) and [docs/FINAL_MVP_ACCEPTANCE_REPORT.md](docs/FINAL_MVP_ACCEPTANCE_REPORT.md).
 

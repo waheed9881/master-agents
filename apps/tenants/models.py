@@ -99,3 +99,34 @@ class TenantSubscription(models.Model):
 
     def __str__(self) -> str:
         return f"{self.tenant.name} — {self.plan.name}"
+
+
+class AuditLog(models.Model):
+    """Security and workspace audit trail."""
+
+    tenant = models.ForeignKey(
+        Tenant,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="audit_logs",
+    )
+    user = models.ForeignKey(
+        "accounts.User",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="audit_logs",
+    )
+    action = models.CharField(max_length=64, db_index=True)
+    object_type = models.CharField(max_length=64, blank=True, default="")
+    object_id = models.CharField(max_length=64, blank=True, default="")
+    metadata = models.JSONField(default=dict, blank=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return f"{self.action} @ {self.created_at}"

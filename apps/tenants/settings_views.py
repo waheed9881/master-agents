@@ -63,9 +63,15 @@ SETTINGS_CARDS = [
     },
     {
         "title": "Security",
-        "description": "Authentication and access overview",
+        "description": "Encryption, rate limits, and production readiness",
         "url_name": "settings:security",
         "icon": "lock",
+    },
+    {
+        "title": "Audit Logs",
+        "description": "Security and workspace activity trail",
+        "url_name": "settings:audit-logs",
+        "icon": "list",
     },
 ]
 
@@ -91,6 +97,17 @@ def workspace_settings_view(request):
         form = WorkspaceSettingsForm(request.POST, instance=tenant)
         if form.is_valid():
             form.save()
+            from apps.tenants.audit import log_audit_event
+
+            log_audit_event(
+                action="workspace_update",
+                tenant=tenant,
+                user=request.user,
+                object_type="tenant",
+                object_id=tenant.pk,
+                metadata={"name": tenant.name},
+                request=request,
+            )
             messages.success(request, "Workspace settings updated.")
             return redirect("settings:workspace")
     else:
@@ -166,7 +183,12 @@ def plan_change_view(request):
     if request.method == "POST":
         form = PlanChangeForm(request.POST)
         if form.is_valid():
-            change_tenant_plan(tenant, form.cleaned_data["plan"])
+            change_tenant_plan(
+                tenant,
+                form.cleaned_data["plan"],
+                user=request.user,
+                request=request,
+            )
             messages.success(request, f"Plan changed to {form.cleaned_data['plan'].name}.")
             return redirect("settings:plan")
     else:
@@ -231,6 +253,17 @@ def demo_tools_view(request):
             elif action == "all_safe":
                 results = reset_safe_demo_data(tenant, reseed=True)
                 messages.success(request, "All demo data reset and re-seeded.")
+            from apps.tenants.audit import log_audit_event
+
+            log_audit_event(
+                action="demo_reset",
+                tenant=tenant,
+                user=request.user,
+                object_type="demo_reset",
+                object_id=action,
+                metadata={"action": action, "results": results or {}},
+                request=request,
+            )
             return redirect("settings:demo-tools")
     else:
         form = DemoResetForm()
@@ -264,11 +297,66 @@ def demo_tools_view(request):
 @login_required
 @require_tenant
 def security_view(request):
+    from apps.tenants.security_status import get_security_dashboard_context
+
+    ctx = get_security_dashboard_context(request.user)
     return render(
         request,
         "settings/security.html",
         {
             "page_title": "Security",
             "active_nav": "settings",
+            "user_email": request.user.email,
+            **ctx,
+        },
+    )
+
+
+@require_permission(can_manage_workspace)
+def audit_logs_view(request):
+    from apps.tenants.models import AuditLog
+
+    qs = AuditLog.objects.filter(tenant=request.tenant).select_related("user")
+
+    action_filter = request.GET.get("action", "").strip()
+    if action_filter:
+        qs = qs.filter(action=action_filter)
+
+    user_filter = request.GET.get("user_id", "").strip()
+    if user_filter.isdigit():
+        qs = qs.filter(user_id=int(user_filter))
+
+    date_from = request.GET.get("date_from", "").strip()
+    if date_from:
+        qs = qs.filter(created_at__date__gte=date_from)
+
+    date_to = request.GET.get("date_to", "").strip()
+    if date_to:
+        qs = qs.filter(created_at__date__lte=date_to)
+
+    logs = qs.order_by("-created_at")[:200]
+    actions = (
+        AuditLog.objects.filter(tenant=request.tenant)
+        .values_list("action", flat=True)
+        .distinct()
+        .order_by("action")
+    )
+    from apps.accounts.models import User
+
+    team_users = User.objects.filter(tenant=request.tenant).order_by("email")
+
+    return render(
+        request,
+        "settings/audit_logs.html",
+        {
+            "page_title": "Audit Logs",
+            "active_nav": "settings",
+            "logs": logs,
+            "actions": actions,
+            "team_users": team_users,
+            "filter_action": action_filter,
+            "filter_user_id": user_filter,
+            "filter_date_from": date_from,
+            "filter_date_to": date_to,
         },
     )

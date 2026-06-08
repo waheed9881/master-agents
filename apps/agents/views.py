@@ -164,6 +164,21 @@ def agent_playground_view(request, agent_id):
         form = AgentPlaygroundForm(request.POST)
         if form.is_valid():
             action = form.cleaned_data.get("action", "send")
+            if action == "send":
+                from apps.accounts.rate_limit import get_rate_limit_for_scope, rate_limit_or_429
+
+                limit, window = get_rate_limit_for_scope("playground")
+                blocked = rate_limit_or_429(
+                    request,
+                    "playground",
+                    limit,
+                    window,
+                    tenant=request.tenant,
+                    user=request.user,
+                    json_response=False,
+                )
+                if blocked:
+                    return HttpResponseForbidden(blocked.content.decode())
             scenario_id = form.cleaned_data.get("scenario_id", "")
             channel = form.cleaned_data["channel"]
 

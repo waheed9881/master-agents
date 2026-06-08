@@ -146,6 +146,32 @@ def check_ai_provider() -> None:
         record(WARN, "AI provider", f"{provider} selected but {key_name} not set (will fallback to mock)")
 
 
+def check_credential_encryption() -> None:
+    from django.conf import settings
+
+    from apps.integrations.services.credential_encryption import encryption_status
+
+    enc = encryption_status()
+    record(enc["status"], "CREDENTIALS_ENCRYPTION_KEY", enc["message"])
+
+
+def check_rate_limiting() -> None:
+    from django.conf import settings
+
+    enabled = getattr(settings, "RATE_LIMITING_ENABLED", True)
+    if enabled:
+        record(
+            PASS,
+            "Rate limiting",
+            (
+                f"enabled (webchat={settings.RATE_LIMIT_WEBCHAT_PER_MINUTE}/min, "
+                f"webhook={settings.RATE_LIMIT_WEBHOOK_PER_MINUTE}/min)"
+            ),
+        )
+    else:
+        record(WARN, "Rate limiting", "disabled")
+
+
 def check_integrations_mock_mode() -> None:
     from django.conf import settings
 
@@ -227,6 +253,8 @@ def main() -> int:
     check_database()
     check_redis()
     check_ai_provider()
+    check_credential_encryption()
+    check_rate_limiting()
     check_integrations_mock_mode()
     check_staging_security()
     check_migrations()

@@ -1,4 +1,5 @@
 """Unified settings URL routes."""
+from django.contrib.auth import views as auth_views
 from django.urls import path
 
 from apps.accounts import team_views
@@ -18,4 +19,13 @@ urlpatterns = [
     path("usage/", settings_views.usage_dashboard_view, name="usage"),
     path("demo-tools/", settings_views.demo_tools_view, name="demo-tools"),
     path("security/", settings_views.security_view, name="security"),
+    path(
+        "security/password/",
+        auth_views.PasswordChangeView.as_view(
+            template_name="settings/password_change.html",
+            success_url="/settings/security/",
+        ),
+        name="password-change",
+    ),
+    path("audit-logs/", settings_views.audit_logs_view, name="audit-logs"),
 ]

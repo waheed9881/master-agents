@@ -231,3 +231,42 @@ Or:
 ```bash
 python manage.py changepassword admin@example.com
 ```
+
+Or use **Settings → Security → Change password**.
+
+---
+
+## Rate limit 429 errors
+
+**Cause:** Too many requests to webhooks, web chat, login, playground, or provider test.
+
+**Fix:** Wait 60 seconds or adjust env vars (`RATE_LIMIT_*_PER_MINUTE`). Disable for local dev:
+
+```
+RATE_LIMITING_ENABLED=False
+```
+
+---
+
+## Credentials not encrypted
+
+**Cause:** `CREDENTIALS_ENCRYPTION_KEY` not set in `.env`.
+
+**Fix:**
+```bash
+python manage.py generate_credentials_key
+# Add output to .env and restart server
+# Re-save integration channels to encrypt existing plain: values
+```
+
+---
+
+## Backup script fails pg_dump
+
+**Cause:** PostgreSQL client version mismatch or `pg_dump` not on PATH.
+
+**Fix:** Script falls back to JSON fixture export automatically. Use Docker pg_dump for full SQL backup:
+
+```bash
+docker compose exec postgres pg_dump -U aiagent ai_agent_os > backup.sql
+```

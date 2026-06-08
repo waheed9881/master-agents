@@ -46,6 +46,35 @@ def ai_providers_test_view(request):
     test_result = None
 
     if request.method == "POST":
+        from apps.accounts.rate_limit import get_rate_limit_for_scope, rate_limit_or_429
+
+        limit, window = get_rate_limit_for_scope("provider_test")
+        blocked = rate_limit_or_429(
+            request,
+            "provider_test",
+            limit,
+            window,
+            tenant=request.tenant,
+            user=request.user,
+            json_response=False,
+        )
+        if blocked:
+            messages.warning(request, blocked.content.decode())
+            return render(
+                request,
+                "agent_engine/ai_providers_test.html",
+                {
+                    "page_title": "Test AI Provider",
+                    "active_nav": "settings",
+                    "agents": agents,
+                    "providers": providers,
+                    "test_result": None,
+                    "selected_provider": request.POST.get("provider", "mock"),
+                    "selected_agent_id": request.POST.get("agent_id", ""),
+                    "message_text": request.POST.get("message_text", ""),
+                },
+            )
+
         provider_name = request.POST.get("provider", "mock")
         agent_id = request.POST.get("agent_id")
         message_text = request.POST.get("message_text", "").strip()
@@ -60,6 +89,8 @@ def ai_providers_test_view(request):
                 provider_name=provider_name,
                 agent_instance=agent,
                 message_text=message_text,
+                user=request.user,
+                request=request,
             )
 
     return render(

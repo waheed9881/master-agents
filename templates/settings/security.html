@@ -4,13 +4,91 @@
 
 {% block app_content %}
 {% include "settings/_nav.html" %}
-<h1 class="text-2xl font-bold text-gray-900 mb-6">Security</h1>
+<h1 class="text-2xl font-bold text-gray-900 mb-2">Security</h1>
+<p class="text-sm text-gray-600 mb-6">Local security status and production readiness overview.</p>
 
-<div class="bg-white rounded-xl border border-gray-200 p-6 max-w-2xl space-y-4 text-sm text-gray-700">
-    <p><strong>Authentication:</strong> Email and password login. Session-based for web UI.</p>
-    <p><strong>API keys:</strong> AI provider keys are read from environment variables only — never stored in the database.</p>
-    <p><strong>Tenant isolation:</strong> All data is scoped by workspace. Users only see their tenant's data.</p>
-    <p><strong>Role access:</strong> Settings and team management require owner or admin role.</p>
-    <p><strong>Demo mode:</strong> Mock AI provider and mock integrations are enabled by default for local demos.</p>
+{% if is_demo_user %}
+<div class="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-900">
+    <strong>Demo account warning:</strong> You are signed in as {{ demo_email }}.
+    <a href="{% url 'settings:password-change' %}" class="text-amber-800 underline font-medium">Change your password</a>
+    before any external demo or shared environment.
+</div>
+{% endif %}
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+    {% for card in security_cards %}
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+        <div class="flex items-center justify-between mb-2">
+            <h2 class="font-semibold text-gray-900">{{ card.title }}</h2>
+            {% if card.status == "PASS" %}
+            <span class="text-xs font-medium px-2 py-1 rounded bg-green-100 text-green-800">PASS</span>
+            {% elif card.status == "WARN" %}
+            <span class="text-xs font-medium px-2 py-1 rounded bg-amber-100 text-amber-800">WARN</span>
+            {% else %}
+            <span class="text-xs font-medium px-2 py-1 rounded bg-red-100 text-red-800">FAIL</span>
+            {% endif %}
+        </div>
+        <p class="text-sm text-gray-600">{{ card.message }}</p>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <div class="bg-white rounded-xl border border-gray-200 p-6">
+        <h2 class="font-semibold text-gray-900 mb-4">Account</h2>
+        <dl class="text-sm space-y-2">
+            <div><dt class="text-gray-500 inline">Email:</dt> <dd class="inline text-gray-900">{{ user_email }}</dd></div>
+            <div><dt class="text-gray-500 inline">AI Provider:</dt> <dd class="inline text-gray-900">{{ ai_provider }}</dd></div>
+            <div><dt class="text-gray-500 inline">Mock integrations:</dt> <dd class="inline text-gray-900">{% if mock_mode %}Yes{% else %}No{% endif %}</dd></div>
+        </dl>
+        <a href="{% url 'settings:password-change' %}" class="inline-block mt-4 text-sm text-indigo-600 hover:text-indigo-800 font-medium">Change password</a>
+    </div>
+
+    <div class="bg-white rounded-xl border border-gray-200 p-6">
+        <h2 class="font-semibold text-gray-900 mb-4">Production Blockers</h2>
+        {% if production_blockers %}
+        <ul class="text-sm text-red-700 space-y-1 list-disc list-inside">
+            {% for blocker in production_blockers %}
+            <li>{{ blocker }}</li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-sm text-green-700">No critical blockers detected for local demo.</p>
+        {% endif %}
+        <p class="text-xs text-gray-500 mt-4">Run: <code class="bg-gray-100 px-1 rounded">python manage.py security_audit</code></p>
+    </div>
+</div>
+
+<div class="bg-white rounded-xl border border-gray-200 p-6">
+    <div class="flex items-center justify-between mb-4">
+        <h2 class="font-semibold text-gray-900">Recent Audit Logs</h2>
+        <a href="{% url 'settings:audit-logs' %}" class="text-sm text-indigo-600 hover:text-indigo-800">View all</a>
+    </div>
+    {% if recent_audit_logs %}
+    <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+            <thead>
+                <tr class="text-left text-gray-500 border-b">
+                    <th class="pb-2 pr-4">Time</th>
+                    <th class="pb-2 pr-4">User</th>
+                    <th class="pb-2 pr-4">Action</th>
+                    <th class="pb-2">Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in recent_audit_logs %}
+                <tr class="border-b border-gray-100">
+                    <td class="py-2 pr-4 text-gray-600">{{ log.created_at|date:"Y-m-d H:i" }}</td>
+                    <td class="py-2 pr-4">{{ log.user.email|default:"-" }}</td>
+                    <td class="py-2 pr-4 font-mono text-xs">{{ log.action }}</td>
+                    <td class="py-2 text-gray-600 truncate max-w-xs">{{ log.object_type }}{% if log.object_id %} #{{ log.object_id }}{% endif %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-sm text-gray-500">No audit log entries yet.</p>
+    {% endif %}
 </div>
 {% endblock %}
