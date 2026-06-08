@@ -66,6 +66,49 @@ Calls `run()` then `enable_human_takeover()` on conversation if handoff is requi
 
 Set `AI_PROVIDER=mock` for demos and CI.
 
+### Provider settings UI
+
+- `/settings/ai-providers/` — read-only env configuration status
+- `/settings/ai-providers/test/` — isolated provider test form
+- API: `GET /api/agent-engine/providers/status/`, `POST /api/agent-engine/providers/test/`
+
+API keys are read from environment variables only — never stored in the database.
+
+### Environment variables
+
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| AI_PROVIDER | mock | Active provider |
+| AI_MODEL_NAME | (provider default) | Override model |
+| AI_MAX_TOKENS | 800 | Max completion tokens |
+| AI_TEMPERATURE | 0.3 | Sampling temperature |
+| AI_FALLBACK_PROVIDER | mock | Fallback when key missing or request fails |
+| AI_DAILY_TOKEN_BUDGET | — | Placeholder budget cap |
+| AI_MONTHLY_TOKEN_BUDGET | — | Placeholder budget cap |
+| AUDIT_AI_PROVIDER | mock | Force provider for scenario audit |
+
+### Structured output
+
+**File:** `apps/agent_engine/structured_output.py`
+
+All providers target a common JSON schema: `reply_text`, `intent`, `extracted_fields`, `handoff_required`, `safety_flags`, `confidence`, etc.
+
+- Mock provider generates structured metadata directly
+- Real providers receive JSON instructions in the system prompt
+- Invalid JSON falls back to plain text + deterministic intent extractor
+
+### Safety guardrails
+
+**File:** `apps/agent_engine/services/safety_guardrails.py`
+
+Post-processes replies to block unsafe overpromises, force handoff for sensitive categories (tax, urgent medical, refund guarantees), and rewrite unsafe replies.
+
+### Fallback behavior
+
+**File:** `apps/agent_engine/services/provider_health.py`
+
+If a real provider key is missing or the HTTP request fails, the engine falls back to `MockAIProvider`. `AgentRun.fallback_used` and `metadata_json` record fallback details.
+
 ## Mock Provider
 
 **File:** `apps/agent_engine/providers/mock.py`

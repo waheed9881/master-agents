@@ -56,6 +56,14 @@ class AgentOrchestrator:
             confidence=result.confidence,
             tokens_used=result.tokens_used,
             cost_estimate=result.cost_estimate,
+            provider_name=getattr(result, "provider_name", "") or "",
+            model_name=getattr(result, "model_name", "") or "",
+            fallback_used=getattr(result, "fallback_used", False),
+            metadata_json={
+                "structured_output": getattr(result, "structured_output", {}),
+                "safety_status": getattr(result, "safety_status", "safe"),
+                **getattr(result, "run_metadata", {}),
+            },
         )
 
         if result.knowledge_used:

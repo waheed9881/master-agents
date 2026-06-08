@@ -79,9 +79,11 @@ python scripts/smoke_test.py
 python scripts/audit_routes.py
 python scripts/api_smoke_test.py
 
-# Agent scenario quality audit
+# Agent scenario quality audit (target: 60 passed, 0 warnings, 0 failed)
 python scripts/audit_agent_quality.py
 ```
+
+Phase 14 adds AI provider settings at `/settings/ai-providers/`, structured output parsing, safety guardrails, and optional real provider testing via env vars.
 
 ## Project Structure
 

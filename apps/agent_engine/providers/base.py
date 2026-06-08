@@ -16,11 +16,8 @@ class AICompletionResult:
 class AIProviderAdapter(ABC):
     """Abstract adapter for LLM providers."""
 
+    provider_name: str = "unknown"
+
     @abstractmethod
     def complete(self, system_prompt: str, user_prompt: str, **kwargs) -> AICompletionResult:
-        raise NotImplementedError
-
-    @property
-    @abstractmethod
-    def provider_name(self) -> str:
         raise NotImplementedError

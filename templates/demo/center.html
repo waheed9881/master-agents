@@ -8,16 +8,21 @@
     <p class="text-sm text-gray-500 mt-1">Local control room for client and internal demos (mock mode).</p>
 </div>
 
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
     <div class="bg-white rounded-xl border border-gray-200 p-4">
         <p class="text-xs text-gray-500">Active agent brains</p>
         <p class="text-2xl font-bold text-green-600">{{ implemented_count }}/10</p>
     </div>
     <div class="bg-white rounded-xl border border-gray-200 p-4">
         <p class="text-xs text-gray-500">AI provider</p>
-        <p class="text-lg font-semibold {% if mock_ai %}text-amber-700{% else %}text-gray-900{% endif %}">
-            {% if mock_ai %}Mock (local){% else %}{{ AI_PROVIDER|default:"live" }}{% endif %}
+        <p class="text-lg font-semibold {% if mock_ai %}text-amber-700{% else %}text-green-700{% endif %}">
+            {% if mock_ai %}Mock (local){% else %}{{ ai_provider|title }} (live){% endif %}
         </p>
+        <p class="text-xs text-gray-500 mt-1">Fallback: {{ fallback_provider }}</p>
+        {% if provider_key_missing %}
+        <p class="text-xs text-amber-700 mt-1">API key missing — will fallback to mock</p>
+        {% endif %}
+        <a href="{% url 'agent_engine_settings:ai-providers' %}" class="text-xs text-indigo-600 hover:text-indigo-800 mt-1 inline-block">AI provider settings →</a>
     </div>
     <div class="bg-white rounded-xl border border-gray-200 p-4">
         <p class="text-xs text-gray-500">Integrations</p>
@@ -28,6 +33,12 @@
     <div class="bg-white rounded-xl border border-gray-200 p-4">
         <p class="text-xs text-gray-500">Test suite ({{ phase_label }})</p>
         <p class="text-2xl font-bold text-indigo-600">{{ documented_test_count }}+</p>
+        <p class="text-xs text-gray-500 mt-1">{{ scenario_count }} demo scenarios</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+        <p class="text-xs text-gray-500">AI tokens (30d)</p>
+        <p class="text-2xl font-bold text-gray-900">{{ agent_engine_stats.total_tokens_used|default:0 }}</p>
+        <p class="text-xs text-gray-500 mt-1">Est. cost: ${{ agent_engine_stats.estimated_cost|floatformat:4 }} · Fallbacks: {{ agent_engine_stats.fallback_count|default:0 }}</p>
     </div>
 </div>
 
@@ -116,6 +127,6 @@
 </div>
 
 <div class="mt-6 rounded-lg bg-amber-50 border border-amber-200 p-4 text-sm text-amber-900">
-    <strong>Mock mode notice:</strong> WhatsApp and Instagram use local mock/simulator mode. Do not claim live Meta connection during demo unless INTEGRATIONS_MOCK_MODE=False and real credentials are configured.
+    <strong>Mock mode notice:</strong> AI responses and intents use the local MockAIProvider (rule-based, not live LLM). WhatsApp and Instagram use local mock/simulator mode. Run <code class="text-xs bg-amber-100 px-1 rounded">python scripts/audit_agent_quality.py</code> to verify all {{ scenario_count }} scenarios. Do not claim live Meta or live AI connection unless configured.
 </div>
 {% endblock %}

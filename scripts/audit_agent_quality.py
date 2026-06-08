@@ -4,15 +4,26 @@ Audit agent quality by running all demo scenarios in mock mode.
 
 Usage:
     python scripts/audit_agent_quality.py
+
+Environment:
+    AUDIT_AI_PROVIDER=mock (default) — force provider for deterministic audit
 """
 import os
 import sys
+
+# Force mock provider before Django loads settings (default deterministic audit)
+audit_provider = os.environ.get("AUDIT_AI_PROVIDER", "mock")
+os.environ["AI_PROVIDER"] = audit_provider
 
 import django
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 django.setup()
+
+from django.conf import settings
+
+settings.AI_PROVIDER = audit_provider
 
 from apps.agent_engine.demo_scenarios import SCENARIOS
 from apps.agent_engine.services.scenario_runner import run_scenario
@@ -30,9 +41,9 @@ def audit():
         return 1
 
     passed = 0
+    accepted = 0
     warnings = 0
     failed = 0
-    results_by_agent: dict[str, list] = {}
 
     for scenario in SCENARIOS:
         agent = AgentInstance.objects.filter(
@@ -47,15 +58,24 @@ def audit():
             continue
 
         result = run_scenario(agent, scenario, channel=scenario.suggested_channel)
-        results_by_agent.setdefault(scenario.template_slug, []).append(result)
 
-        status_icon = {"pass": "PASS", "warn": "WARN", "fail": "FAIL"}[result.overall]
+        status_icon = {
+            "pass": "PASS",
+            "accepted": "ACCEPTED",
+            "warn": "WARN",
+            "fail": "FAIL",
+        }[result.overall]
         print(f"[{status_icon}] {scenario.template_slug} / {scenario.id}: {scenario.title}")
 
         if result.overall == "pass":
             passed += 1
+        elif result.overall == "accepted":
+            accepted += 1
         elif result.overall == "warn":
             warnings += 1
+            for check in result.checks:
+                if check.status == "warn":
+                    print(f"       - {check.name}: {check.detail}")
         else:
             failed += 1
             for check in result.checks:
@@ -65,9 +85,10 @@ def audit():
     total = len(SCENARIOS)
     print("=" * 40)
     print(f"Total scenarios: {total}")
-    print(f"Passed:  {passed}")
+    print(f"Passed:   {passed}")
+    print(f"Accepted: {accepted}")
     print(f"Warnings: {warnings}")
-    print(f"Failed:  {failed}")
+    print(f"Failed:   {failed}")
     print("=" * 40)
 
     if failed == 0 and warnings == 0:

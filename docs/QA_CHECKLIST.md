@@ -21,10 +21,11 @@ Mark each item PASS / FAIL / N/A. All core items should PASS before client demo.
 - [ ] Tenant name displayed correctly
 - [ ] Navigation sidebar shows all modules
 
-## Demo Center (Phase 12)
+## Demo Center (Phase 13)
 
 - [ ] Demo Center loads at `/demo/`
 - [ ] Shows 10 active agent brains and mock mode status
+- [ ] Shows 60 demo scenarios and quality audit target
 - [ ] Agent scenario table links to playgrounds
 - [ ] `docs/LOCAL_DEMO_GUIDE.md` exists
 
@@ -38,19 +39,22 @@ Mark each item PASS / FAIL / N/A. All core items should PASS before client demo.
 - [ ] `GET /api/agent-templates/` returns 10 templates
 - [ ] `GET /api/agents/` returns deployed instances
 
-## Agent Playground (Phase 12)
+## Agent Playground (Phase 13)
 
 - [ ] Playground loads scenario dropdown per agent
 - [ ] Load scenario fills customer message
-- [ ] Send shows expected vs actual quality checks
+- [ ] Send shows normalized intent, raw intent (if different), and quality checks
+- [ ] PASS / ACCEPTED / WARN / FAIL status displayed clearly
 - [ ] WhatsApp mock and Instagram mock channels work
 
-## Agent Quality (Phase 12)
+## Agent Quality (Phase 14)
 
-- [ ] `python scripts/audit_agent_quality.py` completes
-- [ ] Clinic urgent symptoms trigger handoff
-- [ ] Finance tax questions trigger handoff
-- [ ] eCommerce refund requests trigger handoff
+- [ ] `python scripts/audit_agent_quality.py` reports 60 passed, 0 warnings, 0 failed
+- [ ] `/settings/ai-providers/` shows provider status (no raw keys)
+- [ ] `/settings/ai-providers/test/` runs mock provider test
+- [ ] `GET /api/agent-engine/providers/status/` returns safe config
+- [ ] Missing real provider key falls back to mock
+- [ ] Analytics shows token/cost/fallback metrics
 
 ## Deploy Sales Agent
 

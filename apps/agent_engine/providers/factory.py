@@ -15,8 +15,11 @@ _PROVIDERS: dict[str, type[AIProviderAdapter]] = {
 }
 
 
-def get_ai_provider(name: str | None = None) -> AIProviderAdapter:
-    """Return configured AI provider, defaulting to mock when keys missing."""
+def get_ai_provider(name: str | None = None, *, resilient: bool = True) -> AIProviderAdapter:
+    """Return configured AI provider with optional resilient fallback wrapper."""
     provider_name = (name or settings.AI_PROVIDER or "mock").lower()
+    if resilient:
+        from apps.agent_engine.providers.resilient import ResilientProviderAdapter
+        return ResilientProviderAdapter(provider_name)
     cls = _PROVIDERS.get(provider_name, MockAIProvider)
     return cls()

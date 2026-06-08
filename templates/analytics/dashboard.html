@@ -194,7 +194,16 @@
             <div><dt class="text-gray-500">Avg confidence</dt><dd class="font-semibold text-gray-900 text-lg">{{ engine.average_confidence }}</dd></div>
             <div><dt class="text-gray-500">Tokens used</dt><dd class="font-semibold text-gray-900">{{ engine.total_tokens_used }}</dd></div>
             <div><dt class="text-gray-500">Est. cost</dt><dd class="font-semibold text-gray-900">${{ engine.estimated_cost }}</dd></div>
+            <div><dt class="text-gray-500">Fallback runs</dt><dd class="font-semibold text-amber-700">{{ engine.fallback_count|default:0 }}</dd></div>
         </dl>
+        {% if engine.runs_by_provider %}
+        <h3 class="text-sm font-semibold text-gray-900 mt-4 mb-2">Runs by provider</h3>
+        <ul class="text-sm space-y-1">
+            {% for provider, count in engine.runs_by_provider.items %}
+            <li class="flex justify-between"><span class="font-mono">{{ provider }}</span><span>{{ count }}</span></li>
+            {% endfor %}
+        </ul>
+        {% endif %}
         {% if engine.runs_by_intent %}
         <h4 class="text-sm font-medium text-gray-700 mb-2">Runs by intent</h4>
         <div class="flex flex-wrap gap-2 mb-4">

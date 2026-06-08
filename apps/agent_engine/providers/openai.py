@@ -5,6 +5,8 @@ from django.conf import settings
 
 from apps.agent_engine.providers.base import AICompletionResult, AIProviderAdapter
 from apps.agent_engine.providers.mock import MockAIProvider
+from apps.agent_engine.services.provider_settings import get_model_name, get_provider_completion_kwargs
+from apps.agent_engine.structured_output import STRUCTURED_OUTPUT_JSON_INSTRUCTION
 
 logger = logging.getLogger(__name__)
 
@@ -16,23 +18,30 @@ class OpenAIProvider(AIProviderAdapter):
         api_key = settings.OPENAI_API_KEY
         if not api_key:
             logger.warning("OPENAI_API_KEY not set, falling back to mock provider")
-            return MockAIProvider().complete(system_prompt, user_prompt, **kwargs)
+            result = MockAIProvider().complete(system_prompt, user_prompt, **kwargs)
+            result.metadata = {**(result.metadata or {}), "fallback_used": True, "provider": "mock"}
+            return result
 
         try:
             import httpx
 
-            model = kwargs.get("model", "gpt-4o-mini")
+            defaults = get_provider_completion_kwargs("openai")
+            model = kwargs.get("model") or defaults["model"]
+            temperature = kwargs.get("temperature", defaults["temperature"])
+            max_tokens = kwargs.get("max_tokens", defaults["max_tokens"])
+            structured_system = system_prompt + "\n\n" + STRUCTURED_OUTPUT_JSON_INSTRUCTION
+
             response = httpx.post(
                 "https://api.openai.com/v1/chat/completions",
                 headers={"Authorization": f"Bearer {api_key}"},
                 json={
                     "model": model,
                     "messages": [
-                        {"role": "system", "content": system_prompt},
+                        {"role": "system", "content": structured_system},
                         {"role": "user", "content": user_prompt},
                     ],
-                    "temperature": kwargs.get("temperature", 0.7),
-                    "max_tokens": kwargs.get("max_tokens", 512),
+                    "temperature": temperature,
+                    "max_tokens": max_tokens,
                 },
                 timeout=30.0,
             )
@@ -46,8 +55,10 @@ class OpenAIProvider(AIProviderAdapter):
                 confidence=0.85,
                 tokens_used=tokens,
                 cost_estimate=tokens * 0.000002,
-                metadata={"provider": "openai", "model": model},
+                metadata={"provider": "openai", "model": model, "fallback_used": False},
             )
         except Exception as exc:
             logger.exception("OpenAI request failed: %s", exc)
-            return MockAIProvider().complete(system_prompt, user_prompt, **kwargs)
+            result = MockAIProvider().complete(system_prompt, user_prompt, **kwargs)
+            result.metadata = {**(result.metadata or {}), "fallback_used": True, "provider": "mock", "error": str(exc)[:200]}
+            return result

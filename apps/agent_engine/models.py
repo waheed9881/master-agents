@@ -26,6 +26,10 @@ class AgentRun(models.Model):
     confidence = models.FloatField(default=0.0)
     tokens_used = models.PositiveIntegerField(default=0)
     cost_estimate = models.DecimalField(max_digits=10, decimal_places=6, default=0)
+    provider_name = models.CharField(max_length=32, blank=True, default="")
+    model_name = models.CharField(max_length=128, blank=True, default="")
+    fallback_used = models.BooleanField(default=False)
+    metadata_json = models.JSONField(default=dict, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

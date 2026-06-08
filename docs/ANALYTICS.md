@@ -26,6 +26,8 @@ Sections:
 | Hot leads | Leads with status=hot |
 | Open conversations | `inbox.Conversation` status=open |
 | Agent runs | `agent_engine.AgentRun` |
+
+Agent engine metrics include `total_tokens_used`, `estimated_cost`, `runs_by_provider`, and `fallback_count` (Phase 14).
 | AI replies | Messages sender_type=ai |
 | Knowledge sources | `knowledge.KnowledgeSource` |
 

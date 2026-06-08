@@ -13,6 +13,12 @@ env = environ.Env(
     ALLOWED_HOSTS=(list, ["localhost", "127.0.0.1"]),
     CSRF_TRUSTED_ORIGINS=(list, []),
     AI_PROVIDER=(str, "mock"),
+    AI_MODEL_NAME=(str, ""),
+    AI_MAX_TOKENS=(int, 800),
+    AI_TEMPERATURE=(float, 0.3),
+    AI_FALLBACK_PROVIDER=(str, "mock"),
+    AI_DAILY_TOKEN_BUDGET=(str, ""),
+    AI_MONTHLY_TOKEN_BUDGET=(str, ""),
     INTEGRATIONS_MOCK_MODE=(bool, True),
 )
 
@@ -161,6 +167,12 @@ REST_FRAMEWORK = {
 
 # AI Provider
 AI_PROVIDER = env("AI_PROVIDER")
+AI_MODEL_NAME = env("AI_MODEL_NAME", default="")
+AI_MAX_TOKENS = env("AI_MAX_TOKENS")
+AI_TEMPERATURE = env("AI_TEMPERATURE")
+AI_FALLBACK_PROVIDER = env("AI_FALLBACK_PROVIDER")
+AI_DAILY_TOKEN_BUDGET = env("AI_DAILY_TOKEN_BUDGET", default="")
+AI_MONTHLY_TOKEN_BUDGET = env("AI_MONTHLY_TOKEN_BUDGET", default="")
 OPENAI_API_KEY = env("OPENAI_API_KEY", default="")
 GROQ_API_KEY = env("GROQ_API_KEY", default="")
 GEMINI_API_KEY = env("GEMINI_API_KEY", default="")

@@ -1,6 +1,6 @@
 # Local Demo Guide — AI Agent OS
 
-This guide covers running a polished local demo of AI Agent OS (Phase 12). Everything runs in **mock mode** — no external APIs or Meta credentials required.
+This guide covers running a polished local demo of AI Agent OS (Phase 13). Everything runs in **mock mode** — no external APIs or Meta credentials required.
 
 ## Prerequisites
 
@@ -134,7 +134,29 @@ Each agent has 5+ preset scenarios in the playground dropdown:
 python scripts/audit_agent_quality.py
 ```
 
-Runs all demo scenarios against deployed agents in mock mode. Reports pass/warn/fail counts.
+Runs all **60 demo scenarios** against deployed agents in mock mode.
+
+| Status | Meaning |
+|--------|---------|
+| **PASS** | All checks passed including normalized intent match |
+| **ACCEPTED** | Intent matched via alias or handoff/safety correct despite label variance |
+| **WARN** | Non-blocking issue (e.g. missing signal, intent mismatch without handoff) |
+| **FAIL** | Blocking issue (no reply, wrong handoff, unsafe response, missing CRM) |
+
+Target result: `60 passed, 0 warnings, 0 failed`.
+
+Intents are normalized via `apps/agent_engine/intent_normalizer.py` before comparison. The mock provider uses rule-based keyword detection — not a live LLM.
+
+### Testing real providers locally
+
+1. Add API key to `.env` (e.g. `OPENAI_API_KEY=sk-...`)
+2. Set `AI_PROVIDER=openai` (or groq/gemini)
+3. Restart the server
+4. Open `/settings/ai-providers/` to verify key status
+5. Use `/settings/ai-providers/test/` for an isolated test
+6. Keep `AI_FALLBACK_PROVIDER=mock` for safe fallback
+
+Scenario audit always uses mock unless `AUDIT_AI_PROVIDER=env` is set.
 
 ## What Is Real vs Mock
 
@@ -150,7 +172,7 @@ Runs all demo scenarios against deployed agents in mock mode. Reports pass/warn/
 - Do **not** claim live WhatsApp or Instagram sending unless `INTEGRATIONS_MOCK_MODE=False` with real Meta setup.
 - Do **not** claim AI provides medical diagnosis, tax advice, legal advice, or guaranteed refunds.
 - Do **not** claim appointments or deals are final — staff confirmation is required.
-- Do **not** claim all intents are 100% accurate — mock provider uses keyword matching.
+- Do **not** claim live LLM intelligence — mock provider uses deterministic keyword matching with intent normalization.
 
 ## Validation Commands
 

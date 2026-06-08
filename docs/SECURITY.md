@@ -36,6 +36,9 @@ The following are **mandatory** before staging or production deployment:
 - `.env.example` contains placeholders only
 - `SECRET_KEY` / `DJANGO_SECRET_KEY` must be unique per environment
 - AI API keys (`OPENAI_API_KEY`, etc.) optional; mock provider needs none
+- **Never commit real API keys** — use `.env` locally only
+- Provider settings UI shows key configured yes/no, never the actual key
+- Scenario audit (`audit_agent_quality.py`) forces `AUDIT_AI_PROVIDER=mock` by default
 - Meta credentials (`META_APP_SECRET`, `META_ACCESS_TOKEN`) required only for live integrations
 
 ## .env Rules

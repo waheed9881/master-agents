@@ -52,9 +52,16 @@ class GenericExtractorMixin:
         if any(w in lower for w in ("urgent", "emergency", "asap", "immediately")):
             data.raw_signals.append("urgent")
 
-        order_match = re.search(r"\b(?:order|#)\s*#?(\w{5,})\b", message, re.IGNORECASE)
+        order_match = re.search(
+            r"\b(?:order\s*(?:#|id)?\s*)?([A-Z]{2,}[-_]?\d[\w-]*)\b",
+            message,
+            re.IGNORECASE,
+        )
         if order_match:
             data.raw_signals.append(f"order_id:{order_match.group(1)}")
+        elif re.search(r"\bORD[-_]?\d+\b", message, re.IGNORECASE):
+            ord_id = re.search(r"\b(ORD[-_]?\d+)\b", message, re.IGNORECASE).group(1)
+            data.raw_signals.append(f"order_id:{ord_id}")
 
         invoice_match = re.search(r"\b(?:invoice|inv)[#\s-]*(\w{3,})\b", message, re.IGNORECASE)
         if invoice_match:

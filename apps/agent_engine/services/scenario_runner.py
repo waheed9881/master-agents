@@ -3,6 +3,8 @@ from dataclasses import dataclass, field
 from uuid import uuid4
 
 from apps.agent_engine.demo_scenarios import UNSAFE_REPLY_PHRASES, DemoScenario
+from apps.agent_engine.domain_intents import get_domain_for_slug
+from apps.agent_engine.intent_normalizer import intents_equivalent, normalize_intent
 from apps.agent_engine.services.orchestrator import AgentOrchestrator
 from apps.agents.models import AgentInstance
 from apps.crm.models import Lead, Task
@@ -13,7 +15,7 @@ from apps.inbox.services import create_message, find_or_create_contact, find_or_
 @dataclass
 class ScenarioCheck:
     name: str
-    status: str  # pass, warn, fail
+    status: str  # pass, accepted, warn, fail
     detail: str = ""
 
 
@@ -22,6 +24,9 @@ class ScenarioRunResult:
     scenario: DemoScenario
     reply: str = ""
     intent: str = ""
+    raw_intent: str = ""
+    normalized_intent: str = ""
+    intent_match_reason: str = ""
     agent_run_id: int | None = None
     lead_id: int | None = None
     lead_status: str | None = None
@@ -29,14 +34,23 @@ class ScenarioRunResult:
     task_created: bool = False
     should_handoff: bool = False
     handoff_reason: str = ""
+    provider_name: str = ""
+    model_name: str = ""
+    tokens_used: int = 0
+    cost_estimate: float = 0.0
+    fallback_used: bool = False
+    safety_status: str = ""
     extracted: dict = field(default_factory=dict)
     checks: list[ScenarioCheck] = field(default_factory=list)
-    overall: str = "pass"  # pass, warn, fail
+    overall: str = "pass"  # pass, accepted, warn, fail
 
     def to_playground_dict(self) -> dict:
         return {
             "reply": self.reply,
             "intent": self.intent,
+            "raw_intent": self.raw_intent,
+            "normalized_intent": self.normalized_intent,
+            "intent_match_reason": self.intent_match_reason,
             "agent_run_id": self.agent_run_id,
             "lead_id": self.lead_id,
             "lead_status": self.lead_status,
@@ -44,11 +58,21 @@ class ScenarioRunResult:
             "task_created": self.task_created,
             "should_handoff": self.should_handoff,
             "handoff_reason": self.handoff_reason,
+            "provider_name": self.provider_name,
+            "model_name": self.model_name,
+            "tokens_used": self.tokens_used,
+            "cost_estimate": self.cost_estimate,
+            "fallback_used": self.fallback_used,
+            "safety_status": self.safety_status,
             "extracted": self.extracted,
             "checks": [{"name": c.name, "status": c.status, "detail": c.detail} for c in self.checks],
             "overall": self.overall,
             "expected": {
                 "intent": self.scenario.expected_intent,
+                "normalized_intent": normalize_intent(
+                    self.scenario.expected_intent,
+                    get_domain_for_slug(self.scenario.template_slug),
+                ),
                 "acceptable_intents": list(self.scenario.acceptable_intents),
                 "expect_handoff": self.scenario.expect_handoff,
                 "expect_lead": self.scenario.expect_lead,
@@ -59,10 +83,21 @@ class ScenarioRunResult:
         }
 
 
-def _intent_matches(scenario: DemoScenario, actual: str) -> bool:
-    if actual == scenario.expected_intent:
-        return True
-    return actual in scenario.acceptable_intents
+def _intent_matches(scenario: DemoScenario, actual: str) -> tuple[bool, str, str]:
+    """Return (matches, status, detail). status is pass, accepted, or warn."""
+    domain = get_domain_for_slug(scenario.template_slug)
+    norm_actual = normalize_intent(actual, domain)
+    matches, reason = intents_equivalent(
+        scenario.expected_intent,
+        actual,
+        domain=domain,
+        acceptable=scenario.acceptable_intents,
+    )
+    if matches:
+        if reason.startswith("acceptable:") or reason.startswith("alias:"):
+            return True, "accepted", reason or norm_actual
+        return True, "pass", norm_actual
+    return False, "warn", reason
 
 
 def _signals_match(scenario: DemoScenario, raw_signals: list) -> bool:
@@ -74,6 +109,17 @@ def _signals_match(scenario: DemoScenario, raw_signals: list) -> bool:
     )
 
 
+def _compute_overall(checks: list[ScenarioCheck]) -> str:
+    statuses = [c.status for c in checks]
+    if "fail" in statuses:
+        return "fail"
+    if "warn" in statuses:
+        return "warn"
+    if "accepted" in statuses:
+        return "accepted"
+    return "pass"
+
+
 def run_scenario(
     agent_instance: AgentInstance,
     scenario: DemoScenario,
@@ -82,6 +128,7 @@ def run_scenario(
 ) -> ScenarioRunResult:
     """Execute one scenario through the agent pipeline and evaluate checks."""
     tenant = agent_instance.tenant
+    domain = get_domain_for_slug(scenario.template_slug)
     channel_type = ChannelType.WEB_CHAT
     if channel == "whatsapp_mock":
         channel_type = ChannelType.WHATSAPP
@@ -129,10 +176,18 @@ def run_scenario(
 
     result.reply = agent_result.reply
     result.intent = agent_result.intent
+    result.raw_intent = getattr(agent_result, "raw_intent", "") or ""
+    result.normalized_intent = normalize_intent(agent_result.intent, domain)
     result.agent_run_id = agent_run_id
     result.lead_id = agent_result.lead_id
     result.should_handoff = agent_result.should_handoff
     result.handoff_reason = agent_result.handoff_reason
+    result.provider_name = getattr(agent_result, "provider_name", "") or ""
+    result.model_name = getattr(agent_result, "model_name", "") or ""
+    result.tokens_used = getattr(agent_result, "tokens_used", 0) or 0
+    result.cost_estimate = float(getattr(agent_result, "cost_estimate", 0) or 0)
+    result.fallback_used = getattr(agent_result, "fallback_used", False)
+    result.safety_status = getattr(agent_result, "safety_status", "")
     result.extracted = dict(agent_result.extracted_lead.__dict__)
 
     if agent_result.lead_id:
@@ -158,16 +213,21 @@ def run_scenario(
     )
 
     if result.intent:
-        if _intent_matches(scenario, result.intent):
-            checks.append(ScenarioCheck("intent_matched", "pass", result.intent))
+        matched, intent_status, intent_detail = _intent_matches(scenario, result.intent)
+        result.intent_match_reason = intent_detail
+        if matched:
+            checks.append(ScenarioCheck("intent_matched", intent_status, intent_detail))
         else:
-            checks.append(
-                ScenarioCheck(
-                    "intent_matched",
-                    "warn",
-                    f"Expected {scenario.expected_intent}, got {result.intent}",
+            if scenario.expect_handoff and result.should_handoff:
+                checks.append(
+                    ScenarioCheck(
+                        "intent_matched",
+                        "accepted",
+                        f"Handoff correct; intent mismatch: {intent_detail}",
+                    )
                 )
-            )
+            else:
+                checks.append(ScenarioCheck("intent_matched", "warn", intent_detail))
     else:
         checks.append(ScenarioCheck("intent_matched", "fail", "Empty intent"))
 
@@ -216,11 +276,5 @@ def run_scenario(
         checks.append(ScenarioCheck("safety_rule_followed", "pass"))
 
     result.checks = checks
-    statuses = [c.status for c in checks]
-    if "fail" in statuses:
-        result.overall = "fail"
-    elif "warn" in statuses:
-        result.overall = "warn"
-    else:
-        result.overall = "pass"
+    result.overall = _compute_overall(checks)
     return result

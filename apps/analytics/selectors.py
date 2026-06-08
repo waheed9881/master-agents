@@ -193,6 +193,11 @@ def get_agent_engine_counts(tenant: Tenant, range_key: str) -> dict:
         total_tokens=Sum("tokens_used"),
         total_cost=Sum("cost_estimate"),
     )
+    runs_by_provider = {
+        row["provider_name"] or "unknown": row["count"]
+        for row in runs.values("provider_name").annotate(count=Count("id"))
+    }
+    fallback_count = runs.filter(fallback_used=True).count()
     runs_by_intent = {
         row["intent"] or "unknown": row["count"]
         for row in runs.values("intent").annotate(count=Count("id"))
@@ -204,6 +209,9 @@ def get_agent_engine_counts(tenant: Tenant, range_key: str) -> dict:
             "confidence": run.confidence,
             "tokens_used": run.tokens_used,
             "cost_estimate": float(run.cost_estimate),
+            "provider_name": run.provider_name or "unknown",
+            "model_name": run.model_name or "",
+            "fallback_used": run.fallback_used,
             "created_at": run.created_at,
             "agent_name": run.agent_instance.name if run.agent_instance_id else "",
             "output_preview": (run.output_message or "")[:120],
@@ -226,6 +234,8 @@ def get_agent_engine_counts(tenant: Tenant, range_key: str) -> dict:
         "total_tokens_used": aggregates["total_tokens"] or 0,
         "estimated_cost": float(aggregates["total_cost"] or 0),
         "runs_by_intent": runs_by_intent,
+        "runs_by_provider": runs_by_provider,
+        "fallback_count": fallback_count,
         "latest_runs": latest_runs,
     }
 

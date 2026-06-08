@@ -147,6 +147,29 @@
 - `docs/LOCAL_DEMO_GUIDE.md` with 15/30-minute demo scripts
 - Safety prompt hardening across all agents
 
+## Phase 13 — Agent Quality Stabilization
+
+- Intent normalization layer (`intent_normalizer.py`) with global and per-domain aliases
+- Domain intent registry (`domain_intents.py`) for all 10 agent domains
+- Deterministic intent detection merged with MockAIProvider output
+- Scenario evaluation uses normalized intents (PASS / ACCEPTED / WARN / FAIL)
+- 60 demo scenarios with canonical expected intents
+- Mock provider domain-specific reply styles
+- Playground shows normalized intent, raw intent, and match reason
+- Demo Center shows scenario count and quality audit target
+- Quality audit target: **60 passed, 0 warnings, 0 failed**
+
+## Phase 14 — Real AI Provider Local Testing
+
+- AI provider settings UI at `/settings/ai-providers/`
+- Provider test page and API endpoints
+- Structured output schema with safe JSON parsing
+- Safety guardrails layer for domain-specific rules
+- Provider fallback to mock when keys missing or requests fail
+- AgentRun tracks provider_name, model_name, fallback_used, metadata_json
+- Analytics shows runs by provider, fallback count, token/cost totals
+- `AUDIT_AI_PROVIDER=mock` keeps scenario audit deterministic
+
 ## Known Limitations
 
 - AI uses MockAIProvider in local demo (keyword-based, not LLM)

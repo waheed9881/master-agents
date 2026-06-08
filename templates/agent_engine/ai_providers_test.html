@@ -1,0 +1,61 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}{{ page_title }} — AI Agent OS{% endblock %}
+
+{% block app_content %}
+<div class="mb-6">
+    <a href="{% url 'agent_engine_settings:ai-providers' %}" class="text-sm text-indigo-600 hover:text-indigo-800">← Back to AI providers</a>
+    <h1 class="text-2xl font-bold text-gray-900 mt-2">Test AI Provider</h1>
+    <p class="text-sm text-gray-500">Run an isolated provider test without persisting a full conversation.</p>
+</div>
+
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+    <div class="bg-white rounded-xl border border-gray-200 p-6">
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Provider</label>
+                <select name="provider" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                    {% for p in providers %}
+                    <option value="{{ p.provider }}" {% if selected_provider == p.provider %}selected{% endif %}>{{ p.provider }}{% if not p.available %} (key missing){% endif %}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Agent</label>
+                <select name="agent_id" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                    {% for agent in agents %}
+                    <option value="{{ agent.pk }}" {% if selected_agent_id == agent.pk|stringformat:"s" %}selected{% endif %}>{{ agent.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Test customer message</label>
+                <textarea name="message_text" rows="4" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">{{ message_text }}</textarea>
+            </div>
+            <button type="submit" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">Run test</button>
+        </form>
+    </div>
+
+    <div class="bg-gray-50 rounded-xl border border-gray-200 p-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">Test result</h2>
+        {% if test_result %}
+        <dl class="space-y-2 text-sm">
+            <div><dt class="text-gray-500">Provider used</dt><dd class="font-mono">{{ test_result.provider }}{% if test_result.fallback_used %} (fallback){% endif %}</dd></div>
+            <div><dt class="text-gray-500">Model</dt><dd class="font-mono text-xs">{{ test_result.model }}</dd></div>
+            <div><dt class="text-gray-500">Tokens</dt><dd>{{ test_result.tokens_used }}</dd></div>
+            <div><dt class="text-gray-500">Est. cost</dt><dd>${{ test_result.cost_estimate }}</dd></div>
+            <div><dt class="text-gray-500">Structured output</dt><dd>{% if test_result.structured_output_valid %}Valid{% else %}Fallback parse{% endif %}</dd></div>
+            <div><dt class="text-gray-500">Safety</dt><dd>{{ test_result.safety_status }}</dd></div>
+            <div><dt class="text-gray-500">Intent</dt><dd class="font-mono">{{ test_result.intent }}</dd></div>
+            <div class="pt-2 border-t border-gray-200">
+                <dt class="text-gray-500 mb-1">Reply</dt>
+                <dd class="text-gray-800 whitespace-pre-wrap">{{ test_result.reply }}</dd>
+            </div>
+        </dl>
+        {% else %}
+        <p class="text-sm text-gray-500">Submit the form to run a provider test.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

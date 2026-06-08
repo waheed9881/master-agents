@@ -14,6 +14,7 @@ class ExtractedLeadData:
     buying_intent: bool = False
     business_type: str = ""
     raw_signals: list[str] = field(default_factory=list)
+    detected_intent: str = ""
 
 
 class LeadExtractionService:

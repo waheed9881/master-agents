@@ -60,6 +60,9 @@
         <dl class="space-y-2 text-sm">
             <div><dt class="text-gray-500">Scenario</dt><dd class="font-medium">{{ selected_scenario.title }}</dd></div>
             <div><dt class="text-gray-500">Expected intent</dt><dd class="font-mono text-xs">{{ selected_scenario.expected_intent }}</dd></div>
+            {% if selected_scenario.acceptable_intents %}
+            <div><dt class="text-gray-500">Allowed aliases</dt><dd class="font-mono text-xs">{{ selected_scenario.acceptable_intents|join:", " }}</dd></div>
+            {% endif %}
             <div><dt class="text-gray-500">Expect handoff</dt><dd>{% if selected_scenario.expect_handoff %}Yes{% else %}No{% endif %}</dd></div>
             <div><dt class="text-gray-500">Expect CRM lead</dt><dd>{% if selected_scenario.expect_lead %}Yes{% else %}No{% endif %}</dd></div>
             <div><dt class="text-gray-500">Expect task</dt><dd>{% if selected_scenario.expect_task %}Yes{% else %}No{% endif %}</dd></div>
@@ -81,17 +84,27 @@
         <div class="mb-3">
             <span class="text-xs rounded-full px-2 py-0.5 font-medium
                 {% if playground_result.overall == 'pass' %}bg-green-100 text-green-800
+                {% elif playground_result.overall == 'accepted' %}bg-blue-100 text-blue-800
                 {% elif playground_result.overall == 'warn' %}bg-amber-100 text-amber-800
                 {% else %}bg-red-100 text-red-800{% endif %}">
-                Overall: {{ playground_result.overall|upper }}
+                Overall: {% if playground_result.overall == 'accepted' %}ACCEPTED PASS{% else %}{{ playground_result.overall|upper }}{% endif %}
             </span>
         </div>
         <dl class="space-y-2 text-sm mb-4">
             <div><dt class="text-gray-500">Reply</dt><dd class="text-gray-800 whitespace-pre-wrap">{{ playground_result.reply }}</dd></div>
-            <div><dt class="text-gray-500">Detected intent</dt><dd class="font-medium">{{ playground_result.intent|default:"-" }}</dd></div>
+            <div><dt class="text-gray-500">Normalized intent</dt><dd class="font-medium font-mono text-xs">{{ playground_result.normalized_intent|default:playground_result.intent|default:"-" }}</dd></div>
+            {% if playground_result.raw_intent %}
+            <div><dt class="text-gray-500">Raw detected intent</dt><dd class="font-mono text-xs text-gray-600">{{ playground_result.raw_intent }}</dd></div>
+            {% endif %}
+            {% if playground_result.intent_match_reason %}
+            <div><dt class="text-gray-500">Intent match</dt><dd class="text-xs text-gray-600">{{ playground_result.intent_match_reason }}</dd></div>
+            {% endif %}
             <div><dt class="text-gray-500">Lead score / status</dt><dd>{{ playground_result.lead_score|default:"-" }} / {{ playground_result.lead_status|default:"-" }}</dd></div>
             <div><dt class="text-gray-500">Task created</dt><dd>{% if playground_result.task_created %}Yes{% else %}No{% endif %}</dd></div>
             <div><dt class="text-gray-500">Handoff</dt><dd>{% if playground_result.should_handoff %}Yes - {{ playground_result.handoff_reason }}{% else %}No{% endif %}</dd></div>
+            <div><dt class="text-gray-500">Provider / model</dt><dd class="font-mono text-xs">{{ playground_result.provider_name|default:"-" }} / {{ playground_result.model_name|default:"-" }}</dd></div>
+            <div><dt class="text-gray-500">Tokens / est. cost</dt><dd>{{ playground_result.tokens_used|default:0 }} / ${{ playground_result.cost_estimate|default:0|floatformat:4 }}{% if playground_result.fallback_used %} · fallback{% endif %}</dd></div>
+            <div><dt class="text-gray-500">Safety</dt><dd>{{ playground_result.safety_status|default:"-" }}</dd></div>
             <div><dt class="text-gray-500">AgentRun ID</dt><dd>{{ playground_result.agent_run_id|default:"-" }}</dd></div>
         </dl>
         {% if playground_result.checks %}
@@ -101,6 +114,7 @@
             <li class="flex items-center gap-2">
                 <span class="w-2 h-2 rounded-full
                     {% if check.status == 'pass' %}bg-green-500
+                    {% elif check.status == 'accepted' %}bg-blue-500
                     {% elif check.status == 'warn' %}bg-amber-500
                     {% else %}bg-red-500{% endif %}"></span>
                 <span class="font-medium">{{ check.name }}</span>

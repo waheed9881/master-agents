@@ -1,4 +1,5 @@
 """Build structured prompts for agent runs."""
+from apps.agent_engine.domain_intents import get_domain_for_slug
 from apps.agents.models import AgentInstance
 from apps.inbox.models import Conversation
 
@@ -32,9 +33,14 @@ class PromptBuilder:
         services_text = ", ".join(services) if isinstance(services, list) else str(services)
         pricing_text = cls._format_pricing(pricing)
 
+        template_slug = agent_instance.template.slug
+        domain = get_domain_for_slug(template_slug)
+
         lines = [
             f"You are a professional AI sales assistant for {business_name}.",
             f"Business: {business_name}",
+            f"Agent template: {template_slug}",
+            f"Domain: {domain}",
             f"Tone: {tone}. Language: {language}.",
         ]
         if business_desc:

@@ -2,7 +2,7 @@
 
 **Project:** AI Agent OS  
 **Report date:** June 2026  
-**Release:** MVP 1.2 (Phase 12 — Local Demo Pack)  
+**Release:** MVP 1.3 (Phase 13 — Agent Quality Stabilization)  
 **Verdict:** Accepted for polished local client/internal demo
 
 ---
@@ -23,6 +23,20 @@
 | 10 | Release freeze, audit, staging DevOps | Complete |
 | 11 | Integrations UI, 10 agent brains, playground | Complete |
 | 12 | Scenario QA, Demo Center, quality audit | Complete |
+| 13 | Intent normalization, domain intents, 60/0/0 audit | Complete |
+
+---
+
+## Phase 13 Quality Metrics
+
+| Metric | Before | After |
+|--------|--------|-------|
+| Scenarios passed | 46 | 60 |
+| Warnings | 14 | 0 |
+| Failed | 0 | 0 |
+| Test suite | 206+ | 220+ |
+
+Intent normalization (`intent_normalizer.py`, `domain_intents.py`) ensures scenario comparisons use canonical labels. MockAIProvider remains rule-based — not a live LLM.
 
 ---
 
