@@ -1,9 +1,11 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import Http404
+from django.http import Http404, HttpResponseForbidden
 from django.shortcuts import redirect, render
 
+from apps.accounts.permissions import can_manage_knowledge
 from apps.agents.models import AgentInstance
+from apps.tenants.plan_limits import check_knowledge_limit
 from apps.agents.selectors import list_tenant_agents
 from apps.knowledge import selectors, services
 from apps.knowledge.forms import KnowledgeSourceForm
@@ -14,6 +16,8 @@ from apps.knowledge.models import KnowledgeSourceType
 def knowledge_list_view(request):
     if not request.tenant:
         raise Http404("No tenant")
+    if not can_manage_knowledge(request.user):
+        return HttpResponseForbidden("You do not have permission to manage knowledge.")
 
     agent_filter = request.GET.get("agent")
     agent_instance = None
@@ -32,6 +36,10 @@ def knowledge_list_view(request):
     if request.method == "POST":
         form = KnowledgeSourceForm(request.POST)
         if form.is_valid():
+            limit = check_knowledge_limit(request.tenant)
+            if not limit.allowed:
+                messages.warning(request, limit.message)
+                return redirect("knowledge:list")
             data = form.cleaned_data
             agent = None
             if data.get("agent_instance_id"):

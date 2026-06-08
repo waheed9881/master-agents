@@ -2,13 +2,14 @@
 
 Production-minded SaaS platform for business AI agents. Modular monolith architecture with a shared agent engine and pluggable agent modules.
 
-**MVP Status:** Phases 1-12 complete. **Local demo-ready** — 10 agent brains, scenario QA, Demo Center, mock integrations. Not approved for public production without security hardening (see limitations below).
+**MVP Status:** Phases 1-15 complete. **Local demo-ready** — workspace settings, team roles, plan limits, onboarding, demo reset tools, 10 agent brains, scenario QA, Demo Center, mock integrations. Not approved for public production without security hardening (see limitations below).
 
 ## Product Overview
 
 AI Agent OS lets businesses deploy AI agents for sales, support, and operations across web chat, WhatsApp, and Instagram. The MVP includes:
 
-- Multi-tenant workspaces with role-based access
+- Multi-tenant workspaces with role-based access and team management
+- Workspace settings, plan limits, usage tracking, and onboarding wizard
 - 10 agent templates (all with active brain modules)
 - CRM with leads, pipeline, deals, and tasks
 - Unified inbox with human handoff

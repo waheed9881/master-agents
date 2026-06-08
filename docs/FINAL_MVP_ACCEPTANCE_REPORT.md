@@ -2,7 +2,7 @@
 
 **Project:** AI Agent OS  
 **Report date:** June 2026  
-**Release:** MVP 1.3 (Phase 13 — Agent Quality Stabilization)  
+**Release:** MVP 1.5 (Phase 15 — SaaS Productization)  
 **Verdict:** Accepted for polished local client/internal demo
 
 ---
@@ -24,6 +24,8 @@
 | 11 | Integrations UI, 10 agent brains, playground | Complete |
 | 12 | Scenario QA, Demo Center, quality audit | Complete |
 | 13 | Intent normalization, domain intents, 60/0/0 audit | Complete |
+| 14 | Real AI provider settings, guardrails, fallback, costs | Complete |
+| 15 | Workspace settings, team roles, plans, usage, onboarding, demo reset | Complete |
 
 ---
 

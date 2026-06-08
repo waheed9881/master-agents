@@ -1,0 +1,62 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}{{ page_title }} — AI Agent OS{% endblock %}
+
+{% block app_content %}
+{% include "settings/_nav.html" %}
+<div class="mb-6 flex items-center justify-between">
+    <div>
+        <h1 class="text-2xl font-bold text-gray-900">Plans & Usage</h1>
+        <p class="text-sm text-gray-500 mt-1">Local demo plan assignment — no payment gateway.</p>
+    </div>
+    <a href="{% url 'settings:plan-change' %}" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">Change plan</a>
+</div>
+
+{% if plan %}
+<div class="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+    <h2 class="text-lg font-semibold text-gray-900">Current plan: {{ plan.name }}</h2>
+    <p class="text-sm text-gray-500 mt-1">${{ plan.monthly_price }}/month &middot; Status: {{ subscription.get_status_display|default:"Active" }}</p>
+</div>
+{% else %}
+<div class="bg-amber-50 border border-amber-200 rounded-xl p-6 mb-6 text-sm text-amber-900">
+    No plan assigned. <a href="{% url 'settings:plan-change' %}" class="underline">Choose a plan</a>.
+</div>
+{% endif %}
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+        <p class="text-sm text-gray-500">Active agents</p>
+        <p class="text-2xl font-bold">{{ usage.active_agents }}{% if limits.max_agents %} / {{ limits.max_agents }}{% endif %}</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+        <p class="text-sm text-gray-500">Team members</p>
+        <p class="text-2xl font-bold">{{ usage.team_members }}{% if limits.max_team_members %} / {{ limits.max_team_members }}{% endif %}</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+        <p class="text-sm text-gray-500">Messages this month</p>
+        <p class="text-2xl font-bold">{{ usage.messages_this_month }}{% if limits.max_monthly_messages %} / {{ limits.max_monthly_messages }}{% endif %}</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+        <p class="text-sm text-gray-500">Knowledge sources</p>
+        <p class="text-2xl font-bold">{{ usage.knowledge_sources }}{% if limits.max_knowledge_sources %} / {{ limits.max_knowledge_sources }}{% endif %}</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+        <p class="text-sm text-gray-500">Integrations</p>
+        <p class="text-2xl font-bold">{{ usage.integrations_connected }}{% if limits.max_integrations %} / {{ limits.max_integrations }}{% endif %}</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+        <p class="text-sm text-gray-500">Agent runs this month</p>
+        <p class="text-2xl font-bold">{{ usage.agent_runs_this_month }}</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+        <p class="text-sm text-gray-500">Tokens used</p>
+        <p class="text-2xl font-bold">{{ usage.tokens_used_this_month }}</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+        <p class="text-sm text-gray-500">Est. AI cost</p>
+        <p class="text-2xl font-bold">${{ usage.estimated_ai_cost_this_month|floatformat:4 }}</p>
+    </div>
+</div>
+
+<a href="{% url 'settings:usage' %}" class="text-sm text-indigo-600 hover:text-indigo-800">View full usage dashboard &rarr;</a>
+{% endblock %}

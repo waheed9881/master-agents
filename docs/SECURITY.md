@@ -7,6 +7,9 @@
 | Django session auth | Implemented |
 | CSRF protection | Enabled (staff UI and session API) |
 | Tenant middleware scoping | Implemented |
+| Role-based access (owner/admin/manager/rep) | Implemented (Phase 15) |
+| Settings/team restricted to owner/admin | Implemented |
+| Sales rep blocked from analytics/settings | Implemented |
 | Password validators | Django defaults |
 | Webhook CSRF exempt | Only on webhook endpoints |
 | X-Frame-Options | DENY in production |

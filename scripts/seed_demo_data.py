@@ -21,6 +21,7 @@ from apps.accounts.models import User, UserRole
 from apps.agents.models import AgentTemplate
 from apps.agents.services import create_agent_instance
 from apps.tenants.models import Tenant
+from apps.tenants.plan_services import ensure_tenant_subscription, seed_plans
 from apps.tenants.services import create_tenant
 
 
@@ -37,6 +38,10 @@ def seed():
     )
     action = "Created" if created else "Updated"
     print(f"{action} tenant: {tenant.name}")
+
+    seed_plans()
+    sub = ensure_tenant_subscription(tenant, plan_slug="enterprise")
+    print(f"Subscription: {sub.plan.name}")
 
     user, created = User.objects.get_or_create(
         email="admin@example.com",

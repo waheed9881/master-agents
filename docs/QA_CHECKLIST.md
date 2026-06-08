@@ -47,6 +47,20 @@ Mark each item PASS / FAIL / N/A. All core items should PASS before client demo.
 - [ ] PASS / ACCEPTED / WARN / FAIL status displayed clearly
 - [ ] WhatsApp mock and Instagram mock channels work
 
+## SaaS Productization (Phase 15)
+
+- [ ] `/settings/` loads settings hub
+- [ ] `/settings/workspace/` updates tenant profile
+- [ ] `/settings/team/` loads for owner/admin; sales rep gets 403
+- [ ] Team invite creates local user with temp password
+- [ ] Owner cannot deactivate self if last owner
+- [ ] Plans seeded (Starter, Growth, Pro, Enterprise)
+- [ ] `/settings/plan/` shows usage vs limits
+- [ ] Agent deploy blocked at max_agents (starter = 1)
+- [ ] `/settings/demo-tools/` loads; safe reset clears conversations
+- [ ] `/onboarding/` wizard loads
+- [ ] `python manage.py reset_demo_data --safe` works
+
 ## Agent Quality (Phase 14)
 
 - [ ] `python scripts/audit_agent_quality.py` reports 60 passed, 0 warnings, 0 failed

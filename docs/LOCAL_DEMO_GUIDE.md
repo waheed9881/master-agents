@@ -174,6 +174,21 @@ Scenario audit always uses mock unless `AUDIT_AI_PROVIDER=env` is set.
 - Do **not** claim appointments or deals are final — staff confirmation is required.
 - Do **not** claim live LLM intelligence — mock provider uses deterministic keyword matching with intent normalization.
 
+## Phase 15 — Settings, Team, Plans, Onboarding
+
+1. Open `/settings/` — settings hub with 8 cards
+2. Edit workspace at `/settings/workspace/`
+3. View team at `/settings/team/` (owner/admin only)
+4. Check plan and usage at `/settings/plan/` and `/settings/usage/`
+5. Demo reset at `/settings/demo-tools/` (type RESET to confirm)
+6. Onboarding wizard at `/onboarding/`
+
+**Roles:** owner, admin, sales_manager, sales_rep — sales reps cannot access settings/team or analytics.
+
+**Plan switching:** local demo only at `/settings/plan/change/` — no payment gateway.
+
+**Demo reset:** `python manage.py reset_demo_data --safe --reseed` or `python scripts/reset_demo_state.py --safe`
+
 ## Validation Commands
 
 ```bash

@@ -1,8 +1,11 @@
 from django import forms
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import Http404
+from django.http import Http404, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
+
+from apps.accounts.permissions import can_use_agent_playground
+from apps.tenants.plan_limits import check_agent_limit
 
 from apps.agent_engine.demo_scenarios import get_scenario_by_id, get_scenarios_for_slug
 from apps.agent_engine.services.scenario_runner import run_scenario
@@ -96,6 +99,11 @@ def deploy_agent_view(request, slug):
         )
         return redirect("agents:instance_detail", agent_id=instance.pk)
 
+    limit = check_agent_limit(request.tenant)
+    if not limit.allowed:
+        messages.warning(request, limit.message)
+        return redirect("agents:detail", slug=slug)
+
     instance = services.create_agent_instance(
         tenant=request.tenant,
         template=template,
@@ -141,6 +149,8 @@ def agent_playground_view(request, agent_id):
     """Local agent testing playground with scenario presets."""
     if not request.tenant:
         raise Http404("No tenant")
+    if not can_use_agent_playground(request.user):
+        return HttpResponseForbidden("You do not have permission to use the playground.")
 
     instance = selectors.get_tenant_agent(request.tenant, agent_id)
     if not instance:

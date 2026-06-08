@@ -1,10 +1,12 @@
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import Http404
+from django.http import Http404, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 
+from apps.accounts.permissions import can_manage_integrations
 from apps.agents import selectors as agent_selectors
+from apps.tenants.plan_limits import check_integration_limit
 from apps.inbox.models import ChannelAccount
 from apps.integrations.forms import ChannelAccountForm, ChannelTestForm
 from apps.integrations.models import ChannelCredential, WebhookEvent
@@ -27,6 +29,8 @@ def _require_tenant(request):
 @login_required
 def integrations_index_view(request):
     tenant = _require_tenant(request)
+    if not can_manage_integrations(request.user):
+        return HttpResponseForbidden("You do not have permission to manage integrations.")
 
     accounts = ChannelAccount.objects.filter(tenant=tenant).select_related("credential")
     channel_rows = []
@@ -68,10 +72,16 @@ def integrations_index_view(request):
 @login_required
 def channel_create_view(request):
     tenant = _require_tenant(request)
+    if not can_manage_integrations(request.user):
+        return HttpResponseForbidden("You do not have permission to manage integrations.")
 
     if request.method == "POST":
         form = ChannelAccountForm(request.POST)
         if form.is_valid():
+            limit = check_integration_limit(tenant)
+            if not limit.allowed:
+                messages.warning(request, limit.message)
+                return redirect("integrations:index")
             account = create_channel_account(tenant, form)
             messages.success(request, f"Channel '{account.display_name}' created.")
             return redirect("integrations:index")

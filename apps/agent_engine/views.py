@@ -1,9 +1,10 @@
 """AI provider settings UI views."""
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import Http404
+from django.http import Http404, HttpResponseForbidden
 from django.shortcuts import render
 
+from apps.accounts.permissions import can_manage_ai_providers
 from apps.agent_engine.services.provider_settings import get_all_providers_status, get_provider_status
 from apps.agent_engine.services.provider_test import run_provider_test
 from apps.agents import selectors as agent_selectors
@@ -13,6 +14,8 @@ from apps.agents import selectors as agent_selectors
 def ai_providers_settings_view(request):
     if not request.tenant:
         raise Http404("No tenant")
+    if not can_manage_ai_providers(request.user):
+        return HttpResponseForbidden("You do not have permission to manage AI providers.")
 
     status = get_provider_status()
     providers = get_all_providers_status()
@@ -35,6 +38,8 @@ def ai_providers_settings_view(request):
 def ai_providers_test_view(request):
     if not request.tenant:
         raise Http404("No tenant")
+    if not can_manage_ai_providers(request.user):
+        return HttpResponseForbidden("You do not have permission to manage AI providers.")
 
     agents = agent_selectors.list_tenant_agents(request.tenant).select_related("template")
     providers = get_all_providers_status()

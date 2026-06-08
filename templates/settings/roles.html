@@ -1,0 +1,22 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}{{ page_title }} — AI Agent OS{% endblock %}
+
+{% block app_content %}
+{% include "settings/_nav.html" %}
+<h1 class="text-2xl font-bold text-gray-900 mb-2">Roles & Permissions</h1>
+<p class="text-sm text-gray-500 mb-6">Your role: <strong>{{ current_role }}</strong></p>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    {% for role_name, check_fn, capabilities in role_matrix %}
+    <div class="bg-white rounded-xl border border-gray-200 p-6">
+        <h2 class="text-lg font-semibold text-gray-900">{{ role_name }}</h2>
+        <ul class="mt-3 space-y-1 text-sm text-gray-600 list-disc list-inside">
+            {% for cap in capabilities %}
+            <li>{{ cap }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

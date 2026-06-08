@@ -1,7 +1,8 @@
 from django.contrib.auth.decorators import login_required
-from django.http import Http404
+from django.http import Http404, HttpResponseForbidden
 from django.shortcuts import render
 
+from apps.accounts.permissions import can_view_analytics
 from apps.analytics import selectors
 from apps.analytics.services import AnalyticsService
 
@@ -10,6 +11,8 @@ from apps.analytics.services import AnalyticsService
 def analytics_dashboard_view(request):
     if not request.tenant:
         raise Http404("No tenant")
+    if not can_view_analytics(request.user):
+        return HttpResponseForbidden("You do not have permission to view analytics.")
 
     range_key = request.GET.get("range", selectors.DEFAULT_RANGE)
     if range_key not in selectors.VALID_RANGES:

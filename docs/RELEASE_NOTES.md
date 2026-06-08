@@ -159,6 +159,17 @@
 - Demo Center shows scenario count and quality audit target
 - Quality audit target: **60 passed, 0 warnings, 0 failed**
 
+## Phase 15 — SaaS Productization
+
+- Settings hub at `/settings/` with workspace, team, roles, plans, usage, demo tools, security
+- Workspace settings: tenant profile, timezone, currency, support contact
+- Team management: invite (local password), edit role, deactivate with owner safeguards
+- Role permission helpers (`apps/accounts/permissions.py`) enforced on settings, analytics, integrations, knowledge, AI providers
+- Local SaaS plans (Starter, Growth, Pro, Enterprise) with `TenantSubscription`
+- Usage dashboard and plan limit soft enforcement
+- Demo reset tools and `reset_demo_data --safe` management command
+- Onboarding wizard at `/onboarding/` (6 steps)
+
 ## Phase 14 — Real AI Provider Local Testing
 
 - AI provider settings UI at `/settings/ai-providers/`
@@ -177,7 +188,7 @@
 - No vector semantic search
 - Credential encryption is placeholder
 - No rate limiting on public endpoints
-- No billing or subscription management
+- Plan switching is local/demo only (no payment gateway)
 
 ## What Remains for Live Production
 

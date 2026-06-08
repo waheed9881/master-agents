@@ -1,0 +1,37 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}{{ page_title }} — AI Agent OS{% endblock %}
+
+{% block app_content %}
+{% include "settings/_nav.html" %}
+<h1 class="text-2xl font-bold text-gray-900 mb-6">Usage Dashboard</h1>
+
+{% if not plan %}
+<div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 text-sm text-amber-900">No plan assigned — usage shown without limits.</div>
+{% endif %}
+
+{% with metrics=usage %}
+<div class="space-y-4">
+    {% include "settings/_usage_bar.html" with label="Messages this month" current=metrics.messages_this_month maximum=limits.max_monthly_messages %}
+    {% include "settings/_usage_bar.html" with label="Active agents" current=metrics.active_agents maximum=limits.max_agents %}
+    {% include "settings/_usage_bar.html" with label="Team members" current=metrics.team_members maximum=limits.max_team_members %}
+    {% include "settings/_usage_bar.html" with label="Knowledge sources" current=metrics.knowledge_sources maximum=limits.max_knowledge_sources %}
+    {% include "settings/_usage_bar.html" with label="Integration channels" current=metrics.integrations_connected maximum=limits.max_integrations %}
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+        <p class="text-sm text-gray-500">Agent runs (month)</p>
+        <p class="text-xl font-bold">{{ metrics.agent_runs_this_month }}</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+        <p class="text-sm text-gray-500">Tokens used</p>
+        <p class="text-xl font-bold">{{ metrics.tokens_used_this_month }}</p>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+        <p class="text-sm text-gray-500">Est. AI cost</p>
+        <p class="text-xl font-bold">${{ metrics.estimated_ai_cost_this_month|floatformat:4 }}</p>
+    </div>
+</div>
+{% endwith %}
+{% endblock %}

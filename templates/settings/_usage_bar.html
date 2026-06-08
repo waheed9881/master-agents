@@ -1,0 +1,14 @@
+<div class="bg-white rounded-xl border border-gray-200 p-4">
+    <div class="flex justify-between text-sm mb-2">
+        <span class="font-medium text-gray-700">{{ label }}</span>
+        <span class="text-gray-500">{{ current }}{% if maximum %} / {{ maximum }}{% endif %}</span>
+    </div>
+    {% if maximum %}
+    {% widthratio current maximum 100 as pct %}
+    <div class="w-full bg-gray-100 rounded-full h-2">
+        <div class="bg-indigo-600 h-2 rounded-full" style="width: {% if pct > 100 %}100{% else %}{{ pct }}{% endif %}%"></div>
+    </div>
+    {% else %}
+    <div class="w-full bg-gray-100 rounded-full h-2"><div class="bg-gray-300 h-2 rounded-full w-1/4"></div></div>
+    {% endif %}
+</div>

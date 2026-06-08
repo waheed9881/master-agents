@@ -1,0 +1,16 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}{{ page_title }} — AI Agent OS{% endblock %}
+
+{% block app_content %}
+{% include "settings/_nav.html" %}
+<h1 class="text-2xl font-bold text-gray-900 mb-6">Security</h1>
+
+<div class="bg-white rounded-xl border border-gray-200 p-6 max-w-2xl space-y-4 text-sm text-gray-700">
+    <p><strong>Authentication:</strong> Email and password login. Session-based for web UI.</p>
+    <p><strong>API keys:</strong> AI provider keys are read from environment variables only — never stored in the database.</p>
+    <p><strong>Tenant isolation:</strong> All data is scoped by workspace. Users only see their tenant's data.</p>
+    <p><strong>Role access:</strong> Settings and team management require owner or admin role.</p>
+    <p><strong>Demo mode:</strong> Mock AI provider and mock integrations are enabled by default for local demos.</p>
+</div>
+{% endblock %}
